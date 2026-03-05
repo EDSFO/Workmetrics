@@ -1,0 +1,40 @@
+{
+  "name": "WorkMetrics - Time Tracking",
+  "short_name": "WorkMetrics",
+  "description": "Track time, manage projects, and boost productivity",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4f46e5",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["productivity", "business"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Timer",
+      "short_name": "Timer",
+      "description": "Start time tracking",
+      "url": "/timer",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Ponto",
+      "short_name": "Ponto",
+      "description": "Register attendance",
+      "url": "/kiosk",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

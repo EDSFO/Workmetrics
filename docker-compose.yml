@@ -18,6 +18,59 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - workmetrics-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        - PRISMA_SCHEMA_PATH=../prisma/schema.prisma
+    container_name: workmetrics-backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://workmetrics:workmetrics@postgres:5432/workmetrics}
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-your-super-secret-refresh-key-change-in-production}
+      NODE_ENV: production
+      PORT: 3001
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - workmetrics-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: workmetrics-frontend
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001/v1}
+      NODE_ENV: production
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - workmetrics-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
   # Optional: Redis for caching (can be added later)
   # redis:
@@ -28,11 +81,13 @@ services:
   #     - "${REDIS_PORT:-6379}:6379"
   #   volumes:
   #     - redis_data:/data
+  #   networks:
+  #     - workmetrics-network
+
+networks:
+  workmetrics-network:
+    driver: bridge
 
 volumes:
   postgres_data:
     driver: local
-
-# networks:
-#   workmetrics-network:
-#     driver: bridge

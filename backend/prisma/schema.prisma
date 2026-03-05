@@ -1,0 +1,148 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String    @map("password_hash")
+  name         String
+  role         String    @default("USER") // ADMIN, MANAGER, USER
+  teamId       String?   @map("team_id")
+  hourlyRate   Decimal?  @map("hourly_rate") @db.Decimal(10, 2)
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  team          Team?        @relation(fields: [teamId], references: [id])
+  timeEntries   TimeEntry[]
+  teamOwner     Team?        @relation("TeamOwner")
+  invoices      Invoice[]
+
+  @@map("User")
+}
+
+model Team {
+  id        String   @id @default(uuid())
+  name      String
+  ownerId   String   @unique @map("owner_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  owner     User     @relation("TeamOwner", fields: [ownerId], references: [id])
+  users     User[]
+  projects  Project[]
+  invitations TeamInvitation[]
+
+  @@map("Team")
+}
+
+model Project {
+  id           String    @id @default(uuid())
+  name         String
+  description  String?   @db.Text
+  teamId       String    @map("team_id")
+  budgetHours  Decimal?  @map("budget_hours") @db.Decimal(10, 2)
+  budgetAmount Decimal?  @map("budget_amount") @db.Decimal(12, 2)
+  archived     Boolean   @default(false)
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  team        Team        @relation(fields: [teamId], references: [id])
+  tasks       Task[]
+  timeEntries TimeEntry[]
+
+  @@map("Project")
+}
+
+model Task {
+  id             String    @id @default(uuid())
+  projectId      String    @map("project_id")
+  name           String
+  estimatedHours Decimal?  @map("estimated_hours") @db.Decimal(10, 2)
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  project      Project      @relation(fields: [projectId], references: [id])
+  timeEntries  TimeEntry[]
+
+  @@map("Task")
+}
+
+model TimeEntry {
+  id          String    @id @default(uuid())
+  userId      String    @map("user_id")
+  projectId   String?   @map("project_id")
+  taskId      String?   @map("task_id")
+  startTime   DateTime  @map("start_time")
+  endTime     DateTime? @map("end_time")
+  duration    Int?      // Duration in seconds
+  type        String    @default("TIME") // TIME, CLOCK_IN, CLOCK_OUT, PAUSE, RESUME, AUTO
+  status      String    @default("PENDING") // PENDING, APPROVED, REJECTED
+  description String?   @db.Text
+  billable    Boolean   @default(true)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  user    User     @relation(fields: [userId], references: [id])
+  project Project? @relation(fields: [projectId], references: [id])
+  task    Task?    @relation(fields: [taskId], references: [id])
+
+  @@index([userId])
+  @@index([projectId])
+  @@index([startTime])
+  @@map("TimeEntry")
+}
+
+model TeamInvitation {
+  id        String   @id @default(uuid())
+  teamId    String   @map("team_id")
+  email     String
+  token     String   @unique
+  status    String   @default("PENDING") // PENDING, ACCEPTED, EXPIRED
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  team Team @relation(fields: [teamId], references: [id])
+
+  @@map("TeamInvitation")
+}
+
+model Invoice {
+  id          String    @id @default(uuid())
+  number      String    @unique @map("invoice_number")
+  userId      String    @map("user_id")
+  clientName  String    @map("client_name")
+  clientEmail String?   @map("client_email")
+  periodStart DateTime @map("period_start")
+  periodEnd   DateTime @map("period_end")
+  totalHours  Decimal   @map("total_hours") @db.Decimal(10, 2)
+  hourlyRate  Decimal   @map("hourly_rate") @db.Decimal(10, 2)
+  totalAmount Decimal   @map("total_amount") @db.Decimal(12, 2)
+  status      String    @default("DRAFT") // DRAFT, SENT, PAID, CANCELLED
+  notes       String?   @db.Text
+  dueDate     DateTime? @map("due_date")
+  paidAt      DateTime? @map("paid_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  user    User          @relation(fields: [userId], references: [id])
+  entries InvoiceEntry[]
+
+  @@map("Invoice")
+}
+
+model InvoiceEntry {
+  id         String  @id @default(uuid())
+  invoiceId  String @map("invoice_id")
+  entryId    String @map("entry_id")
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id])
+
+  @@unique([invoiceId, entryId])
+  @@map("InvoiceEntry")
+}

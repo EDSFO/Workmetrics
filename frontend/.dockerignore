@@ -1,0 +1,40 @@
+# Dependencies
+node_modules
+
+# Build outputs
+.next
+out
+dist
+coverage
+
+# IDE
+.vscode
+.idea
+
+# Logs
+*.log
+npm-debug.log*
+
+# Testing
+coverage
+.nyc_output
+
+# Misc
+.DS_Store
+*.env
+.env.local
+.env.*.local
+
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile*
+docker-compose*
+
+# Storybook
+.storybook
+
+# TypeScript
+tsconfig.tsbuildinfo

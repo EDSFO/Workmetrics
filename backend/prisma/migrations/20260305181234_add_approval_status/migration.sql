@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "TimeEntry" ADD COLUMN     "status" TEXT NOT NULL DEFAULT 'PENDING';

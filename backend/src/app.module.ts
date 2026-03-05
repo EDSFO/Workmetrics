@@ -5,6 +5,8 @@ import { ProjectsModule } from './projects/projects.module';
 import { TasksModule } from './tasks/tasks.module';
 import { TimeEntriesModule } from './time-entries/time-entries.module';
 import { TeamsModule } from './teams/teams.module';
+import { ReportsModule } from './reports/reports.module';
+import { InvoicesModule } from './invoices/invoices.module';
 
 @Module({
   imports: [
@@ -14,6 +16,8 @@ import { TeamsModule } from './teams/teams.module';
     TasksModule,
     TimeEntriesModule,
     TeamsModule,
+    ReportsModule,
+    InvoicesModule,
   ],
 })
 export class AppModule {}
