@@ -40,3 +40,7 @@ next-env.d.ts
 # Prisma
 prisma/*.db
 prisma/*.db-journal
+
+# Worktrees
+.worktrees/
+worktrees/
