@@ -214,7 +214,7 @@ export default function ApprovalsPage() {
                     onChange={toggleSelectAll}
                     className="w-4 h-4"
                   />
-                  <span className="font-medium">{selectedEntries.size} selected</span>
+                  <span className="font-medium">{selectedEntries.size} selecionado(s)</span>
                 </div>
                 <div className="flex gap-2">
                   <button
@@ -222,14 +222,14 @@ export default function ApprovalsPage() {
                     disabled={bulkLoading}
                     className="px-4 py-2 bg-green-500 hover:bg-green-600 rounded-lg transition-colors disabled:opacity-50"
                   >
-                    Approve All
+                    ✅ Aprovar Todos
                   </button>
                   <button
                     onClick={handleBulkReject}
                     disabled={bulkLoading}
                     className="px-4 py-2 bg-red-500 hover:bg-red-600 rounded-lg transition-colors disabled:opacity-50"
                   >
-                    Reject All
+                    ❌ Rejeitar Todos
                   </button>
                 </div>
               </div>
