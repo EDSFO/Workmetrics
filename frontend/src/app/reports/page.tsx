@@ -266,8 +266,8 @@ export default function ReportsPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Reports</h1>
-          <p className="text-muted-foreground">Time tracking analytics and exports</p>
+          <h1 className="text-2xl font-bold text-foreground">Relatórios</h1>
+          <p className="text-muted-foreground">Análise de tempo e exportações</p>
         </div>
       </div>
 
@@ -276,12 +276,12 @@ export default function ReportsPage() {
         {/* Quick date presets */}
         <div className="flex flex-wrap gap-2">
           {[
-            { key: 'today', label: 'Today' },
-            { key: 'yesterday', label: 'Yesterday' },
-            { key: 'this-week', label: 'This Week' },
-            { key: 'this-month', label: 'This Month' },
-            { key: 'last-7', label: 'Last 7 Days' },
-            { key: 'last-30', label: 'Last 30 Days' },
+            { key: 'today', label: 'Hoje' },
+            { key: 'yesterday', label: 'Ontem' },
+            { key: 'this-week', label: 'Esta Semana' },
+            { key: 'this-month', label: 'Este Mês' },
+            { key: 'last-7', label: 'Últimos 7 Dias' },
+            { key: 'last-30', label: 'Últimos 30 Dias' },
           ].map(preset => (
             <button
               key={preset.key}
@@ -293,7 +293,7 @@ export default function ReportsPage() {
                   endDate: formatDateForInput(range.end),
                 }));
               }}
-              className="px-3 py-1 text-sm bg-muted hover:bg-muted-foreground/20 rounded-md transition-colors"
+              className="px-3 py-1.5 text-sm bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md transition-colors border border-blue-200"
             >
               {preset.label}
             </button>
@@ -302,21 +302,21 @@ export default function ReportsPage() {
 
         <div className="flex flex-wrap gap-4 items-end">
           <div>
-            <label className="block text-sm font-medium mb-1">Start Date</label>
+            <label className="block text-sm font-medium mb-1">Data Início</label>
             <input
               type="date"
               value={filters.startDate}
               onChange={(e) => setFilters(prev => ({ ...prev, startDate: e.target.value }))}
-              className="px-3 py-2 border rounded-md bg-background"
+              className="px-3 py-2 border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">End Date</label>
+            <label className="block text-sm font-medium mb-1">Data Fim</label>
             <input
               type="date"
               value={filters.endDate}
               onChange={(e) => setFilters(prev => ({ ...prev, endDate: e.target.value }))}
-              className="px-3 py-2 border rounded-md bg-background"
+              className="px-3 py-2 border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
           <div>
@@ -327,11 +327,11 @@ export default function ReportsPage() {
                 ...prev,
                 billable: e.target.value === '' ? null : e.target.value === 'true'
               }))}
-              className="px-3 py-2 border rounded-md bg-background"
+              className="px-3 py-2 border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="">All</option>
-              <option value="true">Billable Only</option>
-              <option value="false">Non-billable Only</option>
+              <option value="">Todos</option>
+              <option value="true">Billable</option>
+              <option value="false">Não Billable</option>
             </select>
           </div>
           <div className="flex gap-2 ml-auto">
@@ -374,26 +374,26 @@ export default function ReportsPage() {
             <button
               onClick={() => setActiveTab('summary')}
               className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                activeTab === 'summary' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted-foreground/10'
+                activeTab === 'summary' ? 'bg-blue-600 text-white' : 'hover:bg-gray-200'
               }`}
             >
-              By Project
+              Por Projeto
             </button>
             <button
               onClick={() => setActiveTab('by-user')}
               className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                activeTab === 'by-user' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted-foreground/10'
+                activeTab === 'by-user' ? 'bg-blue-600 text-white' : 'hover:bg-gray-200'
               }`}
             >
-              By User
+              Por Usuário
             </button>
             <button
               onClick={() => setActiveTab('detailed')}
               className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                activeTab === 'detailed' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted-foreground/10'
+                activeTab === 'detailed' ? 'bg-blue-600 text-white' : 'hover:bg-gray-200'
               }`}
             >
-              Detailed
+              Detalhado
             </button>
           </div>
 
@@ -401,16 +401,16 @@ export default function ReportsPage() {
           {summaryData && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-card rounded-lg p-6 border">
-                <p className="text-sm text-muted-foreground">Total Hours</p>
-                <p className="text-3xl font-bold">{formatHoursMinutes(summaryData.totalSeconds)}</p>
+                <p className="text-sm text-muted-foreground">Total de Horas</p>
+                <p className="text-3xl font-bold text-blue-600">{formatHoursMinutes(summaryData.totalSeconds)}</p>
               </div>
               <div className="bg-card rounded-lg p-6 border">
-                <p className="text-sm text-muted-foreground">Projects</p>
-                <p className="text-3xl font-bold">{summaryData.byProject.length}</p>
+                <p className="text-sm text-muted-foreground">Projetos</p>
+                <p className="text-3xl font-bold text-purple-600">{summaryData.byProject.length}</p>
               </div>
               <div className="bg-card rounded-lg p-6 border">
-                <p className="text-sm text-muted-foreground">Days</p>
-                <p className="text-3xl font-bold">{summaryData.byDay.length}</p>
+                <p className="text-sm text-muted-foreground">Dias</p>
+                <p className="text-3xl font-bold text-green-600">{summaryData.byDay.length}</p>
               </div>
             </div>
           )}
@@ -420,33 +420,44 @@ export default function ReportsPage() {
             <div className="bg-card rounded-lg border overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-muted">
+                  <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium uppercase">Project</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium uppercase">Hours</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium uppercase">Billable</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium uppercase">Entries</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium uppercase">%</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Projeto</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Horas</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Billable</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Registros</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">%</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y">
-                    {summaryData.byProject.map((project, idx) => (
-                      <tr key={idx} className="hover:bg-muted/50">
-                        <td className="px-6 py-4 font-medium">{project.projectName}</td>
-                        <td className="px-6 py-4">{formatHoursMinutes(project.totalSeconds)}</td>
-                        <td className="px-6 py-4 text-green-600">{formatHoursMinutes(project.totalBillable)}</td>
-                        <td className="px-6 py-4">{project.entryCount}</td>
-                        <td className="px-6 py-4">
-                          {summaryData.totalSeconds > 0
-                            ? ((project.totalSeconds / summaryData.totalSeconds) * 100).toFixed(1)
-                            : 0}%
-                        </td>
-                      </tr>
-                    ))}
+                    {summaryData.byProject.map((project, idx) => {
+                      const percent = summaryData.totalSeconds > 0
+                        ? (project.totalSeconds / summaryData.totalSeconds) * 100
+                        : 0;
+                      return (
+                        <tr key={idx} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 font-medium">{project.projectName}</td>
+                          <td className="px-6 py-4">{formatHoursMinutes(project.totalSeconds)}</td>
+                          <td className="px-6 py-4 text-green-600">{formatHoursMinutes(project.totalBillable)}</td>
+                          <td className="px-6 py-4">{project.entryCount}</td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-2">
+                              <div className="w-16 bg-gray-200 rounded-full h-2">
+                                <div
+                                  className="bg-blue-600 h-2 rounded-full"
+                                  style={{ width: `${percent}%` }}
+                                />
+                              </div>
+                              <span className="text-sm font-medium">{percent.toFixed(1)}%</span>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
                     {summaryData.byProject.length === 0 && (
                       <tr>
                         <td colSpan={5} className="px-6 py-8 text-center text-muted-foreground">
-                          No data for this period
+                          Sem dados para este período
                         </td>
                       </tr>
                     )}
@@ -461,33 +472,44 @@ export default function ReportsPage() {
             <div className="bg-card rounded-lg border overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-muted">
+                  <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium uppercase">User</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium uppercase">Hours</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium uppercase">Billable</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium uppercase">Entries</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium uppercase">%</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Usuário</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Horas</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Billable</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Registros</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">%</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y">
-                    {summaryData.byUser.map((userItem, idx) => (
-                      <tr key={idx} className="hover:bg-muted/50">
-                        <td className="px-6 py-4 font-medium">{userItem.userName}</td>
-                        <td className="px-6 py-4">{formatHoursMinutes(userItem.totalSeconds)}</td>
-                        <td className="px-6 py-4 text-green-600">{formatHoursMinutes(userItem.totalBillable)}</td>
-                        <td className="px-6 py-4">{userItem.entryCount}</td>
-                        <td className="px-6 py-4">
-                          {summaryData.totalSeconds > 0
-                            ? ((userItem.totalSeconds / summaryData.totalSeconds) * 100).toFixed(1)
-                            : 0}%
-                        </td>
-                      </tr>
-                    ))}
+                    {summaryData.byUser.map((userItem, idx) => {
+                      const percent = summaryData.totalSeconds > 0
+                        ? (userItem.totalSeconds / summaryData.totalSeconds) * 100
+                        : 0;
+                      return (
+                        <tr key={idx} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 font-medium">{userItem.userName}</td>
+                          <td className="px-6 py-4">{formatHoursMinutes(userItem.totalSeconds)}</td>
+                          <td className="px-6 py-4 text-green-600">{formatHoursMinutes(userItem.totalBillable)}</td>
+                          <td className="px-6 py-4">{userItem.entryCount}</td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-2">
+                              <div className="w-16 bg-gray-200 rounded-full h-2">
+                                <div
+                                  className="bg-purple-600 h-2 rounded-full"
+                                  style={{ width: `${percent}%` }}
+                                />
+                              </div>
+                              <span className="text-sm font-medium">{percent.toFixed(1)}%</span>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
                     {summaryData.byUser.length === 0 && (
                       <tr>
                         <td colSpan={5} className="px-6 py-8 text-center text-muted-foreground">
-                          No data for this period
+                          Sem dados para este período
                         </td>
                       </tr>
                     )}
@@ -502,19 +524,19 @@ export default function ReportsPage() {
             <div className="bg-card rounded-lg border overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-muted">
+                  <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium uppercase">Date</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium uppercase">Project</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium uppercase">Task</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium uppercase">Duration</th>
-                      {isManager() && <th className="px-4 py-3 text-left text-xs font-medium uppercase">User</th>}
-                      <th className="px-4 py-3 text-left text-xs font-medium uppercase">Billable</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase">Data</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase">Projeto</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase">Tarefa</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase">Duração</th>
+                      {isManager() && <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase">Usuário</th>}
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase">Billable</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y">
                     {detailedData.entries.map((entry) => (
-                      <tr key={entry.id} className="hover:bg-muted/50">
+                      <tr key={entry.id} className="hover:bg-gray-50">
                         <td className="px-4 py-3 text-sm">
                           {new Date(entry.date).toLocaleDateString('pt-BR')}
                         </td>
@@ -524,9 +546,9 @@ export default function ReportsPage() {
                         {isManager() && <td className="px-4 py-3 text-sm">{entry.userName}</td>}
                         <td className="px-4 py-3 text-sm">
                           {entry.billable ? (
-                            <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded">Yes</span>
+                            <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded">Sim</span>
                           ) : (
-                            <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">No</span>
+                            <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">Não</span>
                           )}
                         </td>
                       </tr>
@@ -534,7 +556,7 @@ export default function ReportsPage() {
                     {detailedData.entries.length === 0 && (
                       <tr>
                         <td colSpan={6} className="px-6 py-8 text-center text-muted-foreground">
-                          No entries found for this period
+                          Nenhum registro encontrado para este período
                         </td>
                       </tr>
                     )}
