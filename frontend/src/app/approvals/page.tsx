@@ -57,6 +57,8 @@ export default function ApprovalsPage() {
   const [success, setSuccess] = useState<string | null>(null);
   const [rejectModal, setRejectModal] = useState<{ open: boolean; entryId: string | null }>({ open: false, entryId: null });
   const [rejectReason, setRejectReason] = useState<string>('');
+  const [selectedEntries, setSelectedEntries] = useState<Set<string>>(new Set());
+  const [bulkLoading, setBulkLoading] = useState<boolean>(false);
 
   const fetchPendingEntries = useCallback(async () => {
     setIsLoading(true);
@@ -112,6 +114,72 @@ export default function ApprovalsPage() {
     }
   };
 
+  const handleBulkApprove = async () => {
+    if (selectedEntries.size === 0) return;
+
+    setBulkLoading(true);
+    setError(null);
+    setSuccess(null);
+
+    let approved = 0;
+    for (const entryId of selectedEntries) {
+      try {
+        await api.post(`/time-entries/approvals/${entryId}/approve`);
+        approved++;
+      } catch (err: any) {
+        console.error(`Failed to approve entry ${entryId}:`, err);
+      }
+    }
+
+    setSuccess(`${approved} entries aprovadas`);
+    setSelectedEntries(new Set());
+    fetchPendingEntries();
+    setBulkLoading(false);
+  };
+
+  const handleBulkReject = async () => {
+    if (selectedEntries.size === 0) return;
+
+    setBulkLoading(true);
+    setError(null);
+    setSuccess(null);
+
+    let rejected = 0;
+    for (const entryId of selectedEntries) {
+      try {
+        await api.post(`/time-entries/approvals/${entryId}/reject`, {
+          reason: 'Rejeição em massa',
+        });
+        rejected++;
+      } catch (err: any) {
+        console.error(`Failed to reject entry ${entryId}:`, err);
+      }
+    }
+
+    setSuccess(`${rejected} entries rejeitadas`);
+    setSelectedEntries(new Set());
+    fetchPendingEntries();
+    setBulkLoading(false);
+  };
+
+  const toggleSelectEntry = (entryId: string) => {
+    const newSelected = new Set(selectedEntries);
+    if (newSelected.has(entryId)) {
+      newSelected.delete(entryId);
+    } else {
+      newSelected.add(entryId);
+    }
+    setSelectedEntries(newSelected);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedEntries.size === entries.length) {
+      setSelectedEntries(new Set());
+    } else {
+      setSelectedEntries(new Set(entries.map(e => e.id)));
+    }
+  };
+
   return (
     <div className="p-6">
       <div className="max-w-4xl mx-auto">
@@ -135,10 +203,50 @@ export default function ApprovalsPage() {
             <p className="text-muted-foreground">Nenhuma entry pendente de aprovação</p>
           </div>
         ) : (
-          <div className="space-y-4">
-            {entries.map((entry) => (
-              <div key={entry.id} className="bg-white border rounded-lg p-4">
+          <>
+            {/* Bulk Action Bar */}
+            {selectedEntries.size > 0 && (
+              <div className="sticky top-4 z-10 bg-blue-600 text-white rounded-lg p-4 shadow-lg flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    checked={selectedEntries.size === entries.length}
+                    onChange={toggleSelectAll}
+                    className="w-4 h-4"
+                  />
+                  <span className="font-medium">{selectedEntries.size} selected</span>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleBulkApprove}
+                    disabled={bulkLoading}
+                    className="px-4 py-2 bg-green-500 hover:bg-green-600 rounded-lg transition-colors disabled:opacity-50"
+                  >
+                    Approve All
+                  </button>
+                  <button
+                    onClick={handleBulkReject}
+                    disabled={bulkLoading}
+                    className="px-4 py-2 bg-red-500 hover:bg-red-600 rounded-lg transition-colors disabled:opacity-50"
+                  >
+                    Reject All
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-4">
+              {entries.map((entry) => (
+              <div key={entry.id} className={`bg-white border rounded-lg p-4 ${selectedEntries.has(entry.id) ? 'border-blue-500 ring-2 ring-blue-200' : ''}`}>
                 <div className="flex items-start justify-between">
+                  <div className="flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      checked={selectedEntries.has(entry.id)}
+                      onChange={() => toggleSelectEntry(entry.id)}
+                      className="mt-1 w-4 h-4 cursor-pointer"
+                    />
+                    <div>
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       <span className="font-semibold">{entry.user?.name}</span>
@@ -182,7 +290,8 @@ export default function ApprovalsPage() {
                 </div>
               </div>
             ))}
-          </div>
+            </div>
+          </>
         )}
 
         {/* Reject Modal */}
