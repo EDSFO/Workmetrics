@@ -14,6 +14,9 @@ import { TimeOffModule } from './time-off/time-off.module';
 import { ApiModule } from './api/api.module';
 import { WebhookModule } from './webhooks/webhook.module';
 import { IntegrationsModule } from './integrations/integrations.module';
+import { SsoModule } from './sso/sso.module';
+import { GdprModule } from './gdpr/gdpr.module';
+import { AuditModule } from './audit/audit.module';
 
 @Module({
   imports: [
@@ -32,6 +35,9 @@ import { IntegrationsModule } from './integrations/integrations.module';
     ApiModule,
     WebhookModule,
     IntegrationsModule,
+    SsoModule,
+    GdprModule,
+    AuditModule,
   ],
 })
 export class AppModule {}

@@ -268,3 +268,57 @@ model IntegrationLink {
   @@index([timeEntryId])
   @@map("IntegrationLink")
 }
+
+model SsoProvider {
+  id           String   @id @default(uuid())
+  teamId       String   @map("team_id")
+  type         String   // saml, oidc, ldap
+  name         String   // e.g., "Okta", "Azure AD", "Google Workspace"
+  config       Json     // Provider-specific configuration (entity ID, SSO URL, certificates, etc.)
+  enabled      Boolean  @default(true)
+  defaultRole  String   @default("MEMBER") // Role assigned to new users via SSO
+  Just-in-time Boolean  @default(true) // Auto-create users if they don't exist
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  team Team @relation(fields: [teamId], references: [id])
+
+  @@index([teamId])
+  @@map("SsoProvider")
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  teamId      String?  @map("team_id")
+  userId      String?  @map("user_id")
+  action      String   // e.g., "user.created", "project.updated", "login.success"
+  resource    String?  // e.g., "User", "Project", "TimeEntry"
+  resourceId  String?  @map("resource_id")
+  details     Json?    // Additional context (old/new values, request details)
+  ipAddress   String?  @map("ip_address")
+  userAgent   String?  @map("user_agent")
+  status      String   @default("success") // success, failure
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([teamId])
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("AuditLog")
+}
+
+model DataExport {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  teamId      String?  @map("team_id")
+  status      String   @default("pending") // pending, processing, completed, failed
+  format      String   // json, csv
+  fileUrl     String?  @map("file_url")
+  expiresAt   DateTime? @map("expires_at")
+  requestedAt DateTime @default(now()) @map("requested_at")
+  completedAt DateTime? @map("completed_at")
+
+  @@index([userId])
+  @@index([status])
+  @@map("DataExport")
+}
