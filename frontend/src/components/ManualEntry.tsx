@@ -88,7 +88,7 @@ export default function ManualEntry({ onSuccess }: { onSuccess?: () => void }) {
   // Check for potential overlaps
   const overlapWarning = useMemo(() => {
     if (calculatedDuration <= 0) return null;
-    return 'This entry will be checked for overlaps when saved';
+    return 'Esta entrada será verificada sobreposições ao salvar';
   }, [calculatedDuration]);
 
   // Fetch projects on mount
@@ -157,7 +157,7 @@ export default function ManualEntry({ onSuccess }: { onSuccess?: () => void }) {
 
     // Validate times
     if (calculatedDuration <= 0) {
-      setError('End time must be after start time');
+      setError('A hora de fim deve ser após a hora de início');
       setIsLoading(false);
       return;
     }
@@ -176,7 +176,7 @@ export default function ManualEntry({ onSuccess }: { onSuccess?: () => void }) {
         billable,
       });
 
-      setSuccess('Time entry created successfully!');
+      setSuccess('Entrada de tempo criada com sucesso!');
       setSelectedProjectId('');
       setSelectedTaskId('');
       setDescription('');
@@ -196,7 +196,7 @@ export default function ManualEntry({ onSuccess }: { onSuccess?: () => void }) {
         setSuccess(null);
       }, 2000);
     } catch (err: any) {
-      const errorMessage = err.response?.data?.error || err.response?.data?.message || 'Failed to create time entry';
+      const errorMessage = err.response?.data?.error || err.response?.data?.message || 'Falha ao criar entrada de tempo';
       setError(errorMessage);
     } finally {
       setIsLoading(false);
@@ -210,7 +210,7 @@ export default function ManualEntry({ onSuccess }: { onSuccess?: () => void }) {
           onClick={() => setIsExpanded(true)}
           className="w-full px-4 py-3 bg-blue-500 text-white font-semibold rounded-md hover:bg-blue-600 transition-colors"
         >
-          + Add Manual Entry
+          + Adicionar Entrada Manual
         </button>
       </div>
     );
@@ -219,7 +219,7 @@ export default function ManualEntry({ onSuccess }: { onSuccess?: () => void }) {
   return (
     <div className="p-6 border rounded-lg shadow-sm bg-white">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold">Manual Time Entry</h2>
+        <h2 className="text-xl font-semibold">Entrada de Tempo Manual</h2>
         <button
           onClick={() => {
             setIsExpanded(false);
@@ -228,7 +228,7 @@ export default function ManualEntry({ onSuccess }: { onSuccess?: () => void }) {
           }}
           className="text-gray-500 hover:text-gray-700"
         >
-          Cancel
+          Cancelar
         </button>
       </div>
 
@@ -250,7 +250,7 @@ export default function ManualEntry({ onSuccess }: { onSuccess?: () => void }) {
         {/* Date Picker */}
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Date
+            Data
           </label>
           <input
             type="date"
@@ -265,7 +265,7 @@ export default function ManualEntry({ onSuccess }: { onSuccess?: () => void }) {
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Start Time
+              Hora de Início
             </label>
             <input
               type="time"
@@ -277,7 +277,7 @@ export default function ManualEntry({ onSuccess }: { onSuccess?: () => void }) {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              End Time
+              Hora de Fim
             </label>
             <input
               type="time"
@@ -292,8 +292,8 @@ export default function ManualEntry({ onSuccess }: { onSuccess?: () => void }) {
         {/* Duration Display */}
         <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded">
           <p className="text-sm text-blue-700">
-            <span className="font-medium">Duration:</span>{' '}
-            {calculatedDuration > 0 ? formatDuration(calculatedDuration) : 'Invalid (end time must be after start time)'}
+            <span className="font-medium">Duração:</span>{' '}
+            {calculatedDuration > 0 ? formatDuration(calculatedDuration) : 'Inválida (hora de fim deve ser após hora de início)'}
           </p>
           {overlapWarning && calculatedDuration > 0 && (
             <p className="text-xs text-blue-600 mt-1">{overlapWarning}</p>
@@ -316,14 +316,14 @@ export default function ManualEntry({ onSuccess }: { onSuccess?: () => void }) {
         {/* Project Selector */}
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Project
+            Projeto
           </label>
           <select
             value={selectedProjectId}
             onChange={(e) => setSelectedProjectId(e.target.value)}
             className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="">No Project</option>
+            <option value="">Sem Projeto</option>
             {projects.map((project) => (
               <option key={project.id} value={project.id}>
                 {project.name}
@@ -335,7 +335,7 @@ export default function ManualEntry({ onSuccess }: { onSuccess?: () => void }) {
         {/* Task Selector */}
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Task (optional)
+            Tarefa (opcional)
           </label>
           <select
             value={selectedTaskId}
@@ -343,7 +343,7 @@ export default function ManualEntry({ onSuccess }: { onSuccess?: () => void }) {
             disabled={!selectedProjectId}
             className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
           >
-            <option value="">No Task</option>
+            <option value="">Sem Tarefa</option>
             {tasks.map((task) => (
               <option key={task.id} value={task.id}>
                 {task.name}
@@ -355,13 +355,13 @@ export default function ManualEntry({ onSuccess }: { onSuccess?: () => void }) {
         {/* Description */}
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Description (optional)
+            Descrição (opcional)
           </label>
           <input
             type="text"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="What did you work on?"
+            placeholder="Em que você trabalhou?"
             className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
@@ -375,7 +375,7 @@ export default function ManualEntry({ onSuccess }: { onSuccess?: () => void }) {
               onChange={(e) => setBillable(e.target.checked)}
               className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
             />
-            <span className="text-sm font-medium text-gray-700">Billable</span>
+            <span className="text-sm font-medium text-gray-700">Faturável</span>
           </label>
         </div>
 
@@ -385,7 +385,7 @@ export default function ManualEntry({ onSuccess }: { onSuccess?: () => void }) {
           disabled={isLoading || calculatedDuration <= 0}
           className="w-full px-4 py-3 bg-green-500 text-white font-semibold rounded-md hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
         >
-          {isLoading ? 'Saving...' : 'Save Entry'}
+          {isLoading ? 'Salvando...' : 'Salvar Entrada'}
         </button>
       </form>
     </div>
