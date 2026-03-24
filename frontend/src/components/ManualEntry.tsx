@@ -24,6 +24,7 @@ interface TimeEntry {
   endTime?: string;
   duration?: number;
   description?: string;
+  billable?: boolean;
   project?: Project;
   task?: Task;
 }
@@ -66,6 +67,7 @@ export default function ManualEntry({ onSuccess }: { onSuccess?: () => void }) {
   const [date, setDate] = useState<string>(formatDateForInput(new Date()));
   const [startTime, setStartTime] = useState<string>('09:00');
   const [endTime, setEndTime] = useState<string>('17:00');
+  const [billable, setBillable] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -128,6 +130,24 @@ export default function ManualEntry({ onSuccess }: { onSuccess?: () => void }) {
     }
   }, [selectedProjectId]);
 
+  // Quick duration presets
+  const quickPresets = [
+    { label: '15m', minutes: 15 },
+    { label: '30m', minutes: 30 },
+    { label: '1h', minutes: 60 },
+    { label: '2h', minutes: 120 },
+    { label: '4h', minutes: 240 },
+    { label: '8h', minutes: 480 },
+  ];
+
+  const applyPreset = (minutes: number) => {
+    const startDateTime = new Date(`${date}T${startTime}:00`);
+    const endDateTime = new Date(startDateTime.getTime() + minutes * 60 * 1000);
+    const endHours = String(endDateTime.getHours()).padStart(2, '0');
+    const endMinutes = String(endDateTime.getMinutes()).padStart(2, '0');
+    setEndTime(`${endHours}:${endMinutes}`);
+  };
+
   // Handle form submission
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
@@ -153,6 +173,7 @@ export default function ManualEntry({ onSuccess }: { onSuccess?: () => void }) {
         description: description || null,
         startTime: startDateTime.toISOString(),
         endTime: endDateTime.toISOString(),
+        billable,
       });
 
       setSuccess('Time entry created successfully!');
@@ -162,6 +183,7 @@ export default function ManualEntry({ onSuccess }: { onSuccess?: () => void }) {
       setDate(formatDateForInput(new Date()));
       setStartTime('09:00');
       setEndTime('17:00');
+      setBillable(true);
 
       // Trigger success callback
       if (onSuccess) {
@@ -276,6 +298,19 @@ export default function ManualEntry({ onSuccess }: { onSuccess?: () => void }) {
           {overlapWarning && calculatedDuration > 0 && (
             <p className="text-xs text-blue-600 mt-1">{overlapWarning}</p>
           )}
+          {/* Quick duration presets */}
+          <div className="flex gap-2 mt-2 flex-wrap">
+            {quickPresets.map(preset => (
+              <button
+                key={preset.label}
+                type="button"
+                onClick={() => applyPreset(preset.minutes)}
+                className="px-2 py-1 text-xs bg-white border border-blue-300 rounded hover:bg-blue-100 transition-colors"
+              >
+                {preset.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Project Selector */}
@@ -329,6 +364,19 @@ export default function ManualEntry({ onSuccess }: { onSuccess?: () => void }) {
             placeholder="What did you work on?"
             className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
+        </div>
+
+        {/* Billable Toggle */}
+        <div className="mb-4">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={billable}
+              onChange={(e) => setBillable(e.target.checked)}
+              className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            />
+            <span className="text-sm font-medium text-gray-700">Billable</span>
+          </label>
         </div>
 
         {/* Submit Button */}
