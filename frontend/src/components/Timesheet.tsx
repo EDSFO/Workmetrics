@@ -58,10 +58,10 @@ function formatDateYMD(date: Date): string {
 }
 
 // Get day names
-const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const DAY_NAMES = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
 
 // Get full day names
-const FULL_DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+const FULL_DAY_NAMES = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
 
 export default function Timesheet() {
   const [weekStart, setWeekStart] = useState<Date>(() => getMonday(new Date()));
@@ -95,7 +95,7 @@ export default function Timesheet() {
       setWeekTotal(response.data.weekTotal || 0);
     } catch (err: any) {
       console.error('Failed to fetch week entries:', err);
-      setError(err.response?.data?.message || 'Failed to load time entries');
+      setError(err.response?.data?.message || 'Falha ao carregar entradas de tempo');
     } finally {
       setIsLoading(false);
     }
@@ -268,7 +268,7 @@ export default function Timesheet() {
           </div>
         ))}
         {dayEntries.length > 2 && (
-          <div className="text-xs text-gray-500">+{dayEntries.length - 2} more</div>
+          <div className="text-xs text-gray-500">+{dayEntries.length - 2} mais</div>
         )}
       </div>
     );
@@ -276,7 +276,7 @@ export default function Timesheet() {
 
   // Render project row
   const renderProjectRow = (project: Project | null, projectId: string) => {
-    const projectName = project?.name || 'Unassigned';
+    const projectName = project?.name || 'Não atribuído';
     const total = projectTotals[projectId] || 0;
 
     return (
@@ -304,25 +304,25 @@ export default function Timesheet() {
     <div className="p-6 border rounded-lg shadow-sm bg-white">
       {/* Header with week navigation */}
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold">Weekly Timesheet</h2>
+        <h2 className="text-xl font-semibold">Planilha Semanal</h2>
         <div className="flex items-center gap-2">
           <button
             onClick={goToPreviousWeek}
             className="px-3 py-1 border rounded hover:bg-gray-100"
           >
-            Previous
+            Anterior
           </button>
           <button
             onClick={goToCurrentWeek}
             className="px-3 py-1 border rounded hover:bg-gray-100 text-sm"
           >
-            Today
+            Hoje
           </button>
           <button
             onClick={goToNextWeek}
             className="px-3 py-1 border rounded hover:bg-gray-100"
           >
-            Next
+            Próximo
           </button>
         </div>
       </div>
@@ -334,7 +334,7 @@ export default function Timesheet() {
 
       {/* Loading/Error states */}
       {isLoading && (
-        <div className="text-center py-8 text-gray-500">Loading...</div>
+        <div className="text-center py-8 text-gray-500">Carregando...</div>
       )}
       {error && (
         <div className="text-center py-8 text-red-500">{error}</div>
@@ -348,7 +348,7 @@ export default function Timesheet() {
               <thead>
                 <tr className="bg-gray-100">
                   <th className="px-2 py-3 border-b text-left font-semibold text-sm">
-                    Project
+                    Projeto
                   </th>
                   {weekDates.map((date, index) => (
                     <th key={index} className="px-1 py-3 border-b text-center font-semibold text-sm">
@@ -370,7 +370,7 @@ export default function Timesheet() {
               {/* Grand total */}
               <tfoot>
                 <tr className="bg-gray-200 font-bold">
-                  <td className="px-2 py-3 border-b">Grand Total</td>
+                  <td className="px-2 py-3 border-b">Total Geral</td>
                   {weekDates.map((date, dayIndex) => {
                     const dayTotal = entries
                       .filter(entry => {
@@ -395,7 +395,7 @@ export default function Timesheet() {
           {/* No entries message */}
           {entries.length === 0 && (
             <div className="text-center py-8 text-gray-500">
-              No time entries for this week. Click on a cell to add an entry.
+              Sem entradas de tempo para esta semana. Clique em uma célula para adicionar uma entrada.
             </div>
           )}
         </>
