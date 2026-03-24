@@ -84,9 +84,9 @@ export default function Home() {
   if (!user) {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center p-4 md:p-6 lg:p-24">
-        <h1 className="text-3xl md:text-4xl font-bold mb-4">Welcome to WorkMetrics</h1>
+        <h1 className="text-3xl md:text-4xl font-bold mb-4">Bem-vindo ao WorkMetrics</h1>
         <p className="text-lg text-muted-foreground">
-          Please login to access the application
+          Por favor, faça login para acessar a aplicação
         </p>
       </main>
     );
@@ -96,21 +96,21 @@ export default function Home() {
     <main className="flex flex-col">
       {/* AIDEV-NOTE: Page title - header is now in sidebar */}
       <div className="mb-6 md:mb-8">
-        <h1 className="text-2xl md:text-3xl font-bold">Dashboard</h1>
-        <p className="text-muted-foreground hidden md:block">Time tracking for productive teams</p>
+        <h1 className="text-2xl md:text-3xl font-bold">Painel</h1>
+        <p className="text-muted-foreground hidden md:block">Rastreamento de tempo para equipes produtivas</p>
       </div>
 
       {/* Dashboard Summary Section */}
       <div className="mb-6 md:mb-8">
         {isLoadingDashboard ? (
           <div className="p-4 md:p-6 border rounded-lg shadow-sm bg-gray-50">
-            <p className="text-muted-foreground">Loading dashboard...</p>
+            <p className="text-muted-foreground">Carregando painel...</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6 mb-6">
             {/* Today's Total */}
             <div className="p-4 md:p-6 border rounded-lg shadow-sm bg-white">
-              <h3 className="text-sm font-medium text-gray-500 uppercase mb-2">Today&apos;s Hours</h3>
+              <h3 className="text-sm font-medium text-gray-500 uppercase mb-2">Horas de Hoje</h3>
               <p className="text-2xl md:text-3xl font-bold text-blue-600">
                 {formatHoursMinutes(dashboardData?.todayTotal || 0)}
               </p>
@@ -118,7 +118,7 @@ export default function Home() {
 
             {/* Week's Total */}
             <div className="p-4 md:p-6 border rounded-lg shadow-sm bg-white">
-              <h3 className="text-sm font-medium text-gray-500 uppercase mb-2">This Week</h3>
+              <h3 className="text-sm font-medium text-gray-500 uppercase mb-2">Esta Semana</h3>
               <p className="text-2xl md:text-3xl font-bold text-green-600">
                 {formatHoursMinutes(dashboardData?.weekTotal || 0)}
               </p>
@@ -126,19 +126,19 @@ export default function Home() {
 
             {/* Active Timer */}
             <div className="p-4 md:p-6 border rounded-lg shadow-sm bg-white md:col-span-2 xl:col-span-1">
-              <h3 className="text-sm font-medium text-gray-500 uppercase mb-2">Active Timer</h3>
+              <h3 className="text-sm font-medium text-gray-500 uppercase mb-2">Timer Ativo</h3>
               {dashboardData?.activeTimer ? (
                 <div>
                   <p className="text-lg font-semibold text-orange-600">
-                    Running
+                    Em andamento
                   </p>
                   <p className="text-sm text-gray-600 mt-1 truncate">
-                    {dashboardData.activeTimer.project?.name || 'No Project'}
+                    {dashboardData.activeTimer.project?.name || 'Sem Projeto'}
                     {dashboardData.activeTimer.description && ` - ${dashboardData.activeTimer.description}`}
                   </p>
                 </div>
               ) : (
-                <p className="text-lg font-semibold text-gray-400">Not Running</p>
+                <p className="text-lg font-semibold text-gray-400">Não está rodando</p>
               )}
             </div>
           </div>
@@ -153,7 +153,7 @@ export default function Home() {
             }}
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm md:text-base"
           >
-            {showManualEntry ? 'Hide Manual Entry' : 'Add Manual Entry'}
+            {showManualEntry ? 'Ocultar Entrada Manual' : 'Adicionar Entrada Manual'}
           </button>
           <button
             onClick={() => {
@@ -162,7 +162,7 @@ export default function Home() {
             }}
             className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 text-sm md:text-base"
           >
-            {showTimesheet ? 'Hide Timesheet' : 'View Timesheet'}
+            {showTimesheet ? 'Ocultar Planilha' : 'Ver Planilha'}
           </button>
         </div>
       </div>
@@ -183,10 +183,10 @@ export default function Home() {
 
       {/* Recent Time Entries */}
       <div className="mb-6 md:mb-8">
-        <h2 className="text-xl md:text-2xl font-semibold mb-4">Recent Time Entries</h2>
+        <h2 className="text-xl md:text-2xl font-semibold mb-4">Entradas de Tempo Recentes</h2>
         {isLoadingDashboard ? (
           <div className="p-4 md:p-6 border rounded-lg shadow-sm bg-gray-50">
-            <p className="text-muted-foreground">Loading entries...</p>
+            <p className="text-muted-foreground">Carregando entradas...</p>
           </div>
         ) : dashboardData?.recentEntries && dashboardData.recentEntries.length > 0 ? (
           <div className="border rounded-lg shadow-sm overflow-hidden">
@@ -194,11 +194,11 @@ export default function Home() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                    <th className="px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Project</th>
-                    <th className="px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Task</th>
-                    <th className="px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase hidden md:table-cell">Description</th>
-                    <th className="px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Duration</th>
+                    <th className="px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data</th>
+                    <th className="px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Projeto</th>
+                    <th className="px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tarefa</th>
+                    <th className="px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase hidden md:table-cell">Descrição</th>
+                    <th className="px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Duração</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -227,7 +227,7 @@ export default function Home() {
           </div>
         ) : (
           <div className="p-4 md:p-6 border rounded-lg shadow-sm bg-gray-50">
-            <p className="text-muted-foreground">No recent time entries found.</p>
+            <p className="text-muted-foreground">Nenhuma entrada de tempo recente encontrada.</p>
           </div>
         )}
       </div>
@@ -242,9 +242,9 @@ export default function Home() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <h2 className="text-lg font-semibold">Timer</h2>
+            <h2 className="text-lg font-semibold">Cronômetro</h2>
           </div>
-          <p className="text-muted-foreground text-sm">Start tracking time with the timer</p>
+          <p className="text-muted-foreground text-sm">Comece a rastrear tempo com o cronômetro</p>
         </a>
 
         {/* Calendar Card */}
@@ -255,9 +255,9 @@ export default function Home() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
             </div>
-            <h2 className="text-lg font-semibold">Calendar</h2>
+            <h2 className="text-lg font-semibold">Calendário</h2>
           </div>
-          <p className="text-muted-foreground text-sm">View your time entries in calendar</p>
+          <p className="text-muted-foreground text-sm">Veja suas entradas de tempo no calendário</p>
         </a>
 
         {/* Reports Card */}
@@ -268,9 +268,9 @@ export default function Home() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
             </div>
-            <h2 className="text-lg font-semibold">Reports</h2>
+            <h2 className="text-lg font-semibold">Relatórios</h2>
           </div>
-          <p className="text-muted-foreground text-sm">View and export time reports</p>
+          <p className="text-muted-foreground text-sm">Veja e exporte relatórios de tempo</p>
         </a>
 
         {/* Time Off Card */}
@@ -281,9 +281,9 @@ export default function Home() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
             </div>
-            <h2 className="text-lg font-semibold">Time Off</h2>
+            <h2 className="text-lg font-semibold">Férias e Licenças</h2>
           </div>
-          <p className="text-muted-foreground text-sm">Request and manage time off</p>
+          <p className="text-muted-foreground text-sm">Solicite e gerencie férias</p>
         </a>
 
         {/* Admin: Team Management */}
@@ -295,9 +295,9 @@ export default function Home() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
               </div>
-              <h2 className="text-lg font-semibold">Team</h2>
+              <h2 className="text-lg font-semibold">Equipe</h2>
             </div>
-            <p className="text-muted-foreground text-sm">Manage team members</p>
+            <p className="text-muted-foreground text-sm">Gerencie membros da equipe</p>
           </a>
         )}
 
@@ -310,9 +310,9 @@ export default function Home() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h2 className="text-lg font-semibold">Approvals</h2>
+              <h2 className="text-lg font-semibold">Aprovações</h2>
             </div>
-            <p className="text-muted-foreground text-sm">Review pending approvals</p>
+            <p className="text-muted-foreground text-sm">Revise aprovações pendentes</p>
           </a>
         )}
 
@@ -326,9 +326,9 @@ export default function Home() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
               </div>
-              <h2 className="text-lg font-semibold">Settings</h2>
+              <h2 className="text-lg font-semibold">Configurações</h2>
             </div>
-            <p className="text-muted-foreground text-sm">System configuration</p>
+            <p className="text-muted-foreground text-sm">Configuração do sistema</p>
           </a>
         )}
       </div>
