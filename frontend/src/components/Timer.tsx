@@ -36,6 +36,14 @@ function formatDuration(seconds: number): string {
   return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 }
 
+// Format seconds to short display (e.g., "2h 30m")
+function formatShortDuration(seconds: number): string {
+  const hrs = Math.floor(seconds / 3600);
+  const mins = Math.floor((seconds % 3600) / 60);
+  if (hrs > 0) return `${hrs}h ${mins}m`;
+  return `${mins}m`;
+}
+
 // Calculate elapsed time from start time
 function calculateElapsed(startTime: string): number {
   const start = new Date(startTime).getTime();
@@ -53,6 +61,8 @@ export default function Timer() {
   const [elapsedSeconds, setElapsedSeconds] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [todayEntries, setTodayEntries] = useState<TimeEntry[]>([]);
+  const [todayTotal, setTodayTotal] = useState<number>(0);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Fetch projects on mount
@@ -85,7 +95,7 @@ export default function Timer() {
     fetchTasks();
   }, [selectedProjectId]);
 
-  // Fetch active time entry on mount
+  // Fetch active time entry and today's entries on mount
   useEffect(() => {
     const fetchActiveEntry = async () => {
       try {
@@ -101,7 +111,22 @@ export default function Timer() {
         console.error('Failed to fetch active entry:', err);
       }
     };
+
+    const fetchTodayEntries = async () => {
+      try {
+        const today = new Date().toISOString().split('T')[0];
+        const response = await api.get(`/time-entries?startDate=${today}&endDate=${today}`);
+        const entries = response.data.entries || [];
+        setTodayEntries(entries);
+        const total = entries.reduce((sum: number, e: TimeEntry) => sum + (e.duration || 0), 0);
+        setTodayTotal(total);
+      } catch (err) {
+        console.error('Failed to fetch today entries:', err);
+      }
+    };
+
     fetchActiveEntry();
+    fetchTodayEntries();
   }, []);
 
   // Update elapsed time every second when there's an active entry
@@ -152,8 +177,35 @@ export default function Timer() {
       setSelectedProjectId('');
       setSelectedTaskId('');
       setDescription('');
+      // Refresh today's entries
+      const today = new Date().toISOString().split('T')[0];
+      const entriesRes = await api.get(`/time-entries?startDate=${today}&endDate=${today}`);
+      const entries = entriesRes.data.entries || [];
+      setTodayEntries(entries);
+      const total = entries.reduce((sum: number, e: TimeEntry) => sum + (e.duration || 0), 0);
+      setTodayTotal(total);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to stop timer');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [activeEntry]);
+
+  // Handle discard entry
+  const handleDiscard = useCallback(async () => {
+    if (!activeEntry) return;
+    if (!confirm('Are you sure you want to discard this entry?')) return;
+    setIsLoading(true);
+    setError(null);
+    try {
+      await api.delete(`/time-entries/${activeEntry.id}`);
+      setActiveEntry(null);
+      setElapsedSeconds(0);
+      setSelectedProjectId('');
+      setSelectedTaskId('');
+      setDescription('');
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to discard entry');
     } finally {
       setIsLoading(false);
     }
@@ -181,7 +233,18 @@ export default function Timer() {
             Running
           </div>
         )}
+        {!activeEntry && (
+          <p className="mt-2 text-sm text-muted-foreground">Ready to start</p>
+        )}
       </div>
+
+      {/* Today's Summary */}
+      {!activeEntry && todayTotal > 0 && (
+        <div className="mb-4 p-3 bg-muted rounded-lg text-center">
+          <p className="text-sm text-muted-foreground">Today&apos;s Total</p>
+          <p className="text-xl font-bold">{formatShortDuration(todayTotal)}</p>
+        </div>
+      )}
 
       {/* Project Selector */}
       <div className="mb-4">
@@ -252,13 +315,23 @@ export default function Timer() {
             {isLoading ? 'Starting...' : 'Start Timer'}
           </button>
         ) : (
-          <button
-            onClick={handleStop}
-            disabled={isLoading}
-            className="flex-1 px-4 py-3 bg-red-500 text-white font-semibold rounded-md hover:bg-red-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-          >
-            {isLoading ? 'Stopping...' : 'Stop Timer'}
-          </button>
+          <>
+            <button
+              onClick={handleStop}
+              disabled={isLoading}
+              className="flex-1 px-4 py-3 bg-red-500 text-white font-semibold rounded-md hover:bg-red-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+            >
+              {isLoading ? 'Stopping...' : 'Stop Timer'}
+            </button>
+            <button
+              onClick={handleDiscard}
+              disabled={isLoading}
+              className="px-4 py-3 bg-gray-300 text-gray-700 font-semibold rounded-md hover:bg-gray-400 disabled:bg-gray-200 disabled:cursor-not-allowed transition-colors"
+              title="Discard entry"
+            >
+              Discard
+            </button>
+          </>
         )}
       </div>
 
