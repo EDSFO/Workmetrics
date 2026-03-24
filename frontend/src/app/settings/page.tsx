@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAuthStore } from '@/lib/auth-context';
+import { useAuthStore, api } from '@/lib/auth-context';
 
 type SettingsTab = 'profile' | 'team' | 'sso' | 'integrations' | 'gdpr' | 'audit' | 'api';
 
@@ -44,12 +44,8 @@ export default function SettingsPage() {
 
   const loadSsoProviders = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('/api/sso/providers', { headers: { Authorization: `Bearer ${token}` } });
-      if (res.ok) {
-        const data = await res.json();
-        setSsoProviders(data.providers || []);
-      }
+      const res = await api.get('/sso/providers');
+      setSsoProviders(res.data.providers || []);
     } catch (error) {
       console.error('Failed to load SSO providers:', error);
     }
@@ -57,12 +53,8 @@ export default function SettingsPage() {
 
   const loadIntegrations = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('/api/integrations', { headers: { Authorization: `Bearer ${token}` } });
-      if (res.ok) {
-        const data = await res.json();
-        setIntegrations(data.integrations || []);
-      }
+      const res = await api.get('/integrations');
+      setIntegrations(res.data.integrations || []);
     } catch (error) {
       console.error('Failed to load integrations:', error);
     }
@@ -70,20 +62,12 @@ export default function SettingsPage() {
 
   const loadAuditLogs = async () => {
     try {
-      const token = localStorage.getItem('token');
       const [logsRes, statsRes] = await Promise.all([
-        fetch('/api/audit/logs?limit=50', { headers: { Authorization: `Bearer ${token}` } }),
-        fetch('/api/audit/stats', { headers: { Authorization: `Bearer ${token}` } }),
+        api.get('/audit/logs?limit=50'),
+        api.get('/audit/stats'),
       ]);
-
-      if (logsRes.ok) {
-        const data = await logsRes.json();
-        setAuditLogs(data.logs || []);
-      }
-      if (statsRes.ok) {
-        const data = await statsRes.json();
-        setAuditStats(data);
-      }
+      setAuditLogs(logsRes.data.logs || []);
+      setAuditStats(statsRes.data);
     } catch (error) {
       console.error('Failed to load audit logs:', error);
     }
@@ -95,26 +79,18 @@ export default function SettingsPage() {
     setMessage(null);
 
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('/api/users/profile', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          name: profileData.name,
-          email: profileData.email,
-        }),
+      const res = await api.put('/users/profile', {
+        name: profileData.name,
+        email: profileData.email,
       });
 
-      if (res.ok) {
-        setMessage({ type: 'success', text: 'Profile updated successfully' });
+      if (res.data.id || res.status === 200) {
+        setMessage({ type: 'success', text: 'Perfil atualizado com sucesso' });
       } else {
-        setMessage({ type: 'error', text: 'Failed to update profile' });
+        setMessage({ type: 'error', text: res.data.message || 'Erro ao atualizar perfil' });
       }
-    } catch (error) {
-      setMessage({ type: 'error', text: 'An error occurred' });
+    } catch (error: any) {
+      setMessage({ type: 'error', text: error.response?.data?.message || 'Erro ao atualizar perfil' });
     }
     setLoading(false);
   };
@@ -125,33 +101,25 @@ export default function SettingsPage() {
     setMessage(null);
 
     if (profileData.newPassword !== profileData.confirmPassword) {
-      setMessage({ type: 'error', text: 'Passwords do not match' });
+      setMessage({ type: 'error', text: 'As senhas não conferem' });
       setLoading(false);
       return;
     }
 
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('/api/users/password', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          currentPassword: profileData.currentPassword,
-          newPassword: profileData.newPassword,
-        }),
+      const res = await api.put('/users/password', {
+        currentPassword: profileData.currentPassword,
+        newPassword: profileData.newPassword,
       });
 
-      if (res.ok) {
-        setMessage({ type: 'success', text: 'Password changed successfully' });
+      if (res.data.id || res.status === 200) {
+        setMessage({ type: 'success', text: 'Senha alterada com sucesso' });
         setProfileData({ ...profileData, currentPassword: '', newPassword: '', confirmPassword: '' });
       } else {
-        setMessage({ type: 'error', text: 'Failed to change password' });
+        setMessage({ type: 'error', text: res.data.message || 'Erro ao alterar senha' });
       }
-    } catch (error) {
-      setMessage({ type: 'error', text: 'An error occurred' });
+    } catch (error: any) {
+      setMessage({ type: 'error', text: error.response?.data?.message || 'Erro ao alterar senha' });
     }
     setLoading(false);
   };
@@ -161,59 +129,44 @@ export default function SettingsPage() {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('/api/sso/providers', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(ssoFormData),
-      });
+      const res = await api.post('/sso/providers', ssoFormData);
 
-      if (res.ok) {
-        setMessage({ type: 'success', text: 'SSO provider created' });
+      if (res.data.id || res.status === 201) {
+        setMessage({ type: 'success', text: 'Provedor SSO criado' });
         setShowSsoForm(false);
         loadSsoProviders();
       } else {
-        setMessage({ type: 'error', text: 'Failed to create SSO provider' });
+        setMessage({ type: 'error', text: res.data.message || 'Erro ao criar provedor' });
       }
-    } catch (error) {
-      setMessage({ type: 'error', text: 'An error occurred' });
+    } catch (error: any) {
+      setMessage({ type: 'error', text: error.response?.data?.message || 'Erro ao criar provedor' });
     }
     setLoading(false);
   };
 
   const handleDeleteSsoProvider = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this SSO provider?')) return;
+    if (!confirm('Tem certeza que deseja excluir este provedor SSO?')) return;
 
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`/api/sso/providers/${id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (res.ok) {
-        loadSsoProviders();
-      }
+      await api.delete(`/sso/providers/${id}`);
+      loadSsoProviders();
     } catch (error) {
       console.error('Failed to delete SSO provider:', error);
     }
   };
 
   const formatDate = (date: string) => {
-    return new Date(date).toLocaleString();
+    return new Date(date).toLocaleString('pt-BR');
   };
 
-  const tabs: { id: SettingsTab; label: string; roles?: string[] }[] = [
-    { id: 'profile', label: 'Profile' },
-    { id: 'team', label: 'Team', roles: ['ADMIN', 'OWNER'] },
-    { id: 'sso', label: 'SSO', roles: ['ADMIN', 'OWNER'] },
-    { id: 'integrations', label: 'Integrations', roles: ['ADMIN', 'OWNER'] },
-    { id: 'gdpr', label: 'Privacy (GDPR)' },
-    { id: 'audit', label: 'Audit Logs', roles: ['ADMIN', 'OWNER'] },
-    { id: 'api', label: 'API Keys', roles: ['ADMIN', 'OWNER'] },
+  const tabs: { id: SettingsTab; label: string; icon: string; roles?: string[] }[] = [
+    { id: 'profile', label: 'Perfil', icon: '👤' },
+    { id: 'team', label: 'Equipe', icon: '👥', roles: ['ADMIN', 'OWNER'] },
+    { id: 'sso', label: 'SSO', icon: '🔐', roles: ['ADMIN', 'OWNER'] },
+    { id: 'integrations', label: 'Integrações', icon: '🔗', roles: ['ADMIN', 'OWNER'] },
+    { id: 'gdpr', label: 'Privacidade', icon: '🔒' },
+    { id: 'audit', label: 'Auditoria', icon: '📋', roles: ['ADMIN', 'OWNER'] },
+    { id: 'api', label: 'API', icon: '🔑', roles: ['ADMIN', 'OWNER'] },
   ];
 
   const visibleTabs = tabs.filter((tab) => !tab.roles || (user && isAdmin));
@@ -221,14 +174,14 @@ export default function SettingsPage() {
   return (
     <div className="p-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">Settings</h1>
-        <p className="text-muted-foreground">Manage your account and team settings</p>
+        <h1 className="text-2xl font-bold">Configurações</h1>
+        <p className="text-muted-foreground">Gerencie sua conta e configurações da equipe</p>
       </div>
 
       {message && (
         <div
           className={`mb-4 p-4 rounded-lg ${
-            message.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+            message.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'
           }`}
         >
           {message.text}
@@ -237,19 +190,20 @@ export default function SettingsPage() {
 
       <div className="flex gap-6">
         {/* Sidebar */}
-        <div className="w-48 shrink-0">
+        <div className="w-56 shrink-0">
           <nav className="space-y-1">
             {visibleTabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`w-full text-left px-3 py-2 rounded-lg ${
+                className={`w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 transition-colors ${
                   activeTab === tab.id
-                    ? 'bg-primary text-primary-foreground'
-                    : 'hover:bg-muted'
+                    ? 'bg-blue-100 text-blue-700 font-medium'
+                    : 'hover:bg-gray-100'
                 }`}
               >
-                {tab.label}
+                <span className="text-lg">{tab.icon}</span>
+                <span>{tab.label}</span>
               </button>
             ))}
           </nav>
@@ -261,15 +215,15 @@ export default function SettingsPage() {
           {activeTab === 'profile' && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-lg font-medium mb-4">Profile Information</h2>
+                <h2 className="text-lg font-medium mb-4">Informações do Perfil</h2>
                 <form onSubmit={handleProfileUpdate} className="space-y-4 max-w-md">
                   <div>
-                    <label className="block text-sm font-medium mb-1">Name</label>
+                    <label className="block text-sm font-medium mb-1">Nome</label>
                     <input
                       type="text"
                       value={profileData.name}
                       onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
-                      className="w-full px-3 py-2 border rounded-lg"
+                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                   <div>
@@ -278,15 +232,15 @@ export default function SettingsPage() {
                       type="email"
                       value={profileData.email}
                       onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
-                      className="w-full px-3 py-2 border rounded-lg"
+                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                   <button
                     type="submit"
                     disabled={loading}
-                    className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
                   >
-                    Save Changes
+                    Salvar Alterações
                   </button>
                 </form>
               </div>
@@ -294,41 +248,41 @@ export default function SettingsPage() {
               <hr />
 
               <div>
-                <h2 className="text-lg font-medium mb-4">Change Password</h2>
+                <h2 className="text-lg font-medium mb-4">Alterar Senha</h2>
                 <form onSubmit={handlePasswordChange} className="space-y-4 max-w-md">
                   <div>
-                    <label className="block text-sm font-medium mb-1">Current Password</label>
+                    <label className="block text-sm font-medium mb-1">Senha Atual</label>
                     <input
                       type="password"
                       value={profileData.currentPassword}
                       onChange={(e) => setProfileData({ ...profileData, currentPassword: e.target.value })}
-                      className="w-full px-3 py-2 border rounded-lg"
+                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">New Password</label>
+                    <label className="block text-sm font-medium mb-1">Nova Senha</label>
                     <input
                       type="password"
                       value={profileData.newPassword}
                       onChange={(e) => setProfileData({ ...profileData, newPassword: e.target.value })}
-                      className="w-full px-3 py-2 border rounded-lg"
+                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Confirm New Password</label>
+                    <label className="block text-sm font-medium mb-1">Confirmar Nova Senha</label>
                     <input
                       type="password"
                       value={profileData.confirmPassword}
                       onChange={(e) => setProfileData({ ...profileData, confirmPassword: e.target.value })}
-                      className="w-full px-3 py-2 border rounded-lg"
+                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                   <button
                     type="submit"
                     disabled={loading}
-                    className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
                   >
-                    Change Password
+                    Alterar Senha
                   </button>
                 </form>
               </div>
@@ -338,12 +292,12 @@ export default function SettingsPage() {
           {/* Team Tab */}
           {activeTab === 'team' && (isAdmin || isOwner) && (
             <div>
-              <h2 className="text-lg font-medium mb-4">Team Settings</h2>
-              <p className="text-muted-foreground">
-                Manage team members, roles, and permissions from the Team page.
+              <h2 className="text-lg font-medium mb-4">Configurações de Equipe</h2>
+              <p className="text-muted-foreground mb-4">
+                Gerencie membros da equipe, funções e permissões na página Equipe.
               </p>
-              <a href="/team" className="text-primary hover:underline mt-2 inline-block">
-                Go to Team Management →
+              <a href="/team" className="text-blue-600 hover:underline mt-2 inline-block font-medium">
+                Ir para Gerenciamento de Equipe →
               </a>
             </div>
           )}
@@ -352,18 +306,18 @@ export default function SettingsPage() {
           {activeTab === 'sso' && (isAdmin || isOwner) && (
             <div>
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-lg font-medium">SSO Providers</h2>
+                <h2 className="text-lg font-medium">Provedores SSO</h2>
                 <button
                   onClick={() => setShowSsoForm(true)}
-                  className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                 >
-                  Add Provider
+                  + Adicionar
                 </button>
               </div>
 
               {ssoProviders.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  No SSO providers configured
+                <div className="text-center py-8 text-muted-foreground bg-gray-50 rounded-lg">
+                  Nenhum provedor SSO configurado
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -372,22 +326,22 @@ export default function SettingsPage() {
                       <div>
                         <h3 className="font-medium">{provider.name}</h3>
                         <p className="text-sm text-muted-foreground">
-                          Type: {provider.type.toUpperCase()} • Default Role: {provider.defaultRole}
+                          Tipo: {provider.type?.toUpperCase()} • Função Padrão: {provider.defaultRole}
                         </p>
                       </div>
                       <div className="flex items-center gap-4">
                         <span
-                          className={`px-2 py-1 rounded text-xs ${
+                          className={`px-2 py-1 rounded text-xs font-medium ${
                             provider.enabled ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
                           }`}
                         >
-                          {provider.enabled ? 'Enabled' : 'Disabled'}
+                          {provider.enabled ? 'Ativo' : 'Inativo'}
                         </span>
                         <button
                           onClick={() => handleDeleteSsoProvider(provider.id)}
-                          className="text-red-600 hover:underline text-sm"
+                          className="text-red-600 hover:bg-red-50 px-3 py-1 rounded text-sm transition-colors"
                         >
-                          Delete
+                          Excluir
                         </button>
                       </div>
                     </div>
@@ -398,10 +352,10 @@ export default function SettingsPage() {
               {showSsoForm && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
                   <div className="bg-white rounded-lg p-6 w-full max-w-md">
-                    <h3 className="text-lg font-bold mb-4">Add SSO Provider</h3>
+                    <h3 className="text-lg font-bold mb-4">Adicionar Provedor SSO</h3>
                     <form onSubmit={handleCreateSsoProvider} className="space-y-4">
                       <div>
-                        <label className="block text-sm font-medium mb-1">Type</label>
+                        <label className="block text-sm font-medium mb-1">Tipo</label>
                         <select
                           value={ssoFormData.type}
                           onChange={(e) => setSsoFormData({ ...ssoFormData, type: e.target.value })}
@@ -413,7 +367,7 @@ export default function SettingsPage() {
                         </select>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium mb-1">Name</label>
+                        <label className="block text-sm font-medium mb-1">Nome</label>
                         <input
                           type="text"
                           value={ssoFormData.name}
@@ -422,19 +376,19 @@ export default function SettingsPage() {
                           required
                         />
                       </div>
-                      <div className="flex gap-3 justify-end">
+                      <div className="flex gap-3 justify-end pt-2">
                         <button
                           type="button"
                           onClick={() => setShowSsoForm(false)}
-                          className="px-4 py-2 border rounded-lg"
+                          className="px-4 py-2 border rounded-lg hover:bg-gray-50"
                         >
-                          Cancel
+                          Cancelar
                         </button>
                         <button
                           type="submit"
-                          className="px-4 py-2 bg-primary text-primary-foreground rounded-lg"
+                          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                         >
-                          Create
+                          Criar
                         </button>
                       </div>
                     </form>
@@ -447,16 +401,23 @@ export default function SettingsPage() {
           {/* Integrations Tab */}
           {activeTab === 'integrations' && (isAdmin || isOwner) && (
             <div>
-              <h2 className="text-lg font-medium mb-4">Integrations</h2>
+              <h2 className="text-lg font-medium mb-4">Integrações</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {['Slack', 'Jira', 'Linear'].map((integration) => (
-                  <div key={integration} className="border rounded-lg p-4">
-                    <h3 className="font-medium mb-2">{integration}</h3>
+                {[
+                  { name: 'Slack', icon: '💬', desc: 'Conecte com Slack para notificações' },
+                  { name: 'Jira', icon: '📋', desc: 'Integração com Jira para gestão de tarefas' },
+                  { name: 'Linear', icon: '📊', desc: 'Sincronize com Linear para ciclos' },
+                ].map((integration) => (
+                  <div key={integration.name} className="border rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-xl">{integration.icon}</span>
+                      <h3 className="font-medium">{integration.name}</h3>
+                    </div>
                     <p className="text-sm text-muted-foreground mb-4">
-                      Connect with {integration} for enhanced workflow
+                      {integration.desc}
                     </p>
-                    <button className="px-4 py-2 border rounded-lg hover:bg-muted text-sm">
-                      Configure
+                    <button className="px-4 py-2 border rounded-lg hover:bg-gray-50 text-sm transition-colors">
+                      Configurar
                     </button>
                   </div>
                 ))}
@@ -468,29 +429,29 @@ export default function SettingsPage() {
           {activeTab === 'gdpr' && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-lg font-medium mb-2">Privacy (GDPR)</h2>
+                <h2 className="text-lg font-medium mb-2">Privacidade (GDPR)</h2>
                 <p className="text-muted-foreground mb-4">
-                  Manage your data and privacy settings in compliance with GDPR.
+                  Gerencie seus dados e configurações de privacidade em conformidade com o GDPR.
                 </p>
               </div>
 
               <div className="border rounded-lg p-4">
-                <h3 className="font-medium mb-2">Export Your Data</h3>
+                <h3 className="font-medium mb-2">Exportar Meus Dados</h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Download all your personal data in a portable format.
+                  Baixe todos os seus dados pessoais em um formato portável.
                 </p>
-                <button className="px-4 py-2 border rounded-lg hover:bg-muted text-sm">
-                  Request Data Export
+                <button className="px-4 py-2 border rounded-lg hover:bg-gray-50 text-sm transition-colors">
+                  Solicitar Exportação
                 </button>
               </div>
 
-              <div className="border rounded-lg p-4">
-                <h3 className="font-medium mb-2">Delete Your Account</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Permanently delete your account and all associated data.
+              <div className="border border-red-200 rounded-lg p-4 bg-red-50">
+                <h3 className="font-medium mb-2 text-red-800">Excluir Minha Conta</h3>
+                <p className="text-sm text-red-700 mb-4">
+                  Exclua permanentemente sua conta e todos os dados associados.
                 </p>
-                <button className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm">
-                  Delete Account
+                <button className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm transition-colors">
+                  Excluir Conta
                 </button>
               </div>
             </div>
@@ -499,41 +460,41 @@ export default function SettingsPage() {
           {/* Audit Logs Tab */}
           {activeTab === 'audit' && (isAdmin || isOwner) && (
             <div className="space-y-4">
-              <h2 className="text-lg font-medium">Audit Logs</h2>
+              <h2 className="text-lg font-medium">Logs de Auditoria</h2>
 
               {auditStats && (
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                  <div className="bg-muted rounded-lg p-4">
-                    <p className="text-sm text-muted-foreground">Total Events</p>
-                    <p className="text-2xl font-bold">{auditStats.totalLogs}</p>
+                  <div className="bg-blue-50 rounded-lg p-4 border border-blue-100">
+                    <p className="text-sm text-blue-600">Total de Eventos</p>
+                    <p className="text-2xl font-bold text-blue-800">{auditStats.totalLogs}</p>
                   </div>
-                  <div className="bg-muted rounded-lg p-4">
-                    <p className="text-sm text-muted-foreground">Period</p>
-                    <p className="text-lg font-medium">{auditStats.period?.days} days</p>
+                  <div className="bg-green-50 rounded-lg p-4 border border-green-100">
+                    <p className="text-sm text-green-600">Período</p>
+                    <p className="text-lg font-bold text-green-800">{auditStats.period?.days} dias</p>
                   </div>
                 </div>
               )}
 
-              <div className="border rounded-lg">
+              <div className="border rounded-lg overflow-hidden">
                 {auditLogs.length === 0 ? (
-                  <div className="p-8 text-center text-muted-foreground">No audit logs found</div>
+                  <div className="p-8 text-center text-muted-foreground">Nenhum log de auditoria encontrado</div>
                 ) : (
                   <table className="w-full">
-                    <thead className="bg-muted">
+                    <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-4 py-2 text-left text-sm">Timestamp</th>
-                        <th className="px-4 py-2 text-left text-sm">Action</th>
-                        <th className="px-4 py-2 text-left text-sm">Resource</th>
-                        <th className="px-4 py-2 text-left text-sm">User</th>
+                        <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Data/Hora</th>
+                        <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Ação</th>
+                        <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Recurso</th>
+                        <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Usuário</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y">
                       {auditLogs.slice(0, 20).map((log: any) => (
-                        <tr key={log.id}>
-                          <td className="px-4 py-2 text-sm">{formatDate(log.createdAt)}</td>
-                          <td className="px-4 py-2 text-sm font-mono">{log.action}</td>
-                          <td className="px-4 py-2 text-sm">{log.resource}</td>
-                          <td className="px-4 py-2 text-sm">{log.user?.name || 'System'}</td>
+                        <tr key={log.id} className="hover:bg-gray-50">
+                          <td className="px-4 py-3 text-sm">{formatDate(log.createdAt)}</td>
+                          <td className="px-4 py-3 text-sm font-mono text-blue-600">{log.action}</td>
+                          <td className="px-4 py-3 text-sm">{log.resource}</td>
+                          <td className="px-4 py-3 text-sm">{log.user?.name || 'Sistema'}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -546,12 +507,12 @@ export default function SettingsPage() {
           {/* API Tab */}
           {activeTab === 'api' && (isAdmin || isOwner) && (
             <div>
-              <h2 className="text-lg font-medium mb-4">API Keys</h2>
+              <h2 className="text-lg font-medium mb-4">Chaves de API</h2>
               <p className="text-muted-foreground mb-4">
-                Manage API keys for external integrations.
+                Gerencie chaves de API para integrações externas.
               </p>
-              <button className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90">
-                Generate API Key
+              <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                + Gerar Nova Chave
               </button>
             </div>
           )}
