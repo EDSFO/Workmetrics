@@ -30,6 +30,7 @@ interface Task {
   estimatedHours?: string;
   createdAt: string;
   updatedAt: string;
+  totalTrackedSeconds?: number;
 }
 
 // Format date
@@ -684,44 +685,64 @@ export default function ProjectsPage() {
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {tasks.map(task => (
-                    <div
-                      key={task.id}
-                      className="p-4 border rounded-lg bg-white"
-                    >
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <h4 className="font-medium">{task.name}</h4>
-                          {task.estimatedHours && (
-                            <p className="text-sm text-gray-500">
-                              Estimated: {task.estimatedHours}h
+                  {tasks.map(task => {
+                    const trackedHours = (task.totalTrackedSeconds || 0) / 3600;
+                    const estimatedHours = parseFloat(task.estimatedHours || '0');
+                    const progress = estimatedHours > 0 ? Math.min(100, (trackedHours / estimatedHours) * 100) : 0;
+
+                    return (
+                      <div
+                        key={task.id}
+                        className="p-4 border rounded-lg bg-white"
+                      >
+                        <div className="flex justify-between items-center">
+                          <div className="flex-1">
+                            <h4 className="font-medium">{task.name}</h4>
+                            <div className="flex gap-4 mt-1">
+                              {task.estimatedHours && (
+                                <p className="text-sm text-gray-500">
+                                  Est: {task.estimatedHours}h
+                                </p>
+                              )}
+                              <p className={`text-sm ${trackedHours > estimatedHours && estimatedHours > 0 ? 'text-red-500' : 'text-green-600'}`}>
+                                Tracked: {trackedHours.toFixed(1)}h
+                              </p>
+                            </div>
+                            {/* Progress bar */}
+                            {estimatedHours > 0 && (
+                              <div className="mt-2 h-2 bg-gray-200 rounded-full overflow-hidden w-48">
+                                <div
+                                  className={`h-full transition-all ${trackedHours > estimatedHours ? 'bg-red-500' : 'bg-green-500'}`}
+                                  style={{ width: `${progress}%` }}
+                                />
+                              </div>
+                            )}
+                            <p className="text-xs text-gray-400 mt-1">
+                              Created: {formatDate(task.createdAt)}
                             </p>
-                          )}
-                          <p className="text-xs text-gray-400 mt-1">
-                            Created: {formatDate(task.createdAt)}
-                          </p>
-                        </div>
-                        {canManageProjects && (
-                          <div className="flex gap-1">
-                            <button
-                              onClick={() => startEditTask(task)}
-                              className="p-1 text-blue-500 hover:bg-blue-100 rounded text-sm"
-                              title="Edit"
-                            >
-                              Edit
-                            </button>
-                            <button
-                              onClick={() => handleDeleteTask(task.id)}
-                              className="p-1 text-red-500 hover:bg-red-100 rounded text-sm"
-                              title="Delete"
-                            >
-                              Delete
-                            </button>
                           </div>
-                        )}
+                          {canManageProjects && (
+                            <div className="flex gap-1">
+                              <button
+                                onClick={() => startEditTask(task)}
+                                className="p-1 text-blue-500 hover:bg-blue-100 rounded text-sm"
+                                title="Edit"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => handleDeleteTask(task.id)}
+                                className="p-1 text-red-500 hover:bg-red-100 rounded text-sm"
+                                title="Delete"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </>
