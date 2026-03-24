@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UseGuards, Request, HttpCode, HttpStatus, Query } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Body, Param, UseGuards, Request, HttpCode, HttpStatus, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -799,6 +799,33 @@ export class TimeEntriesController {
   // ============================================
   // END APPROVAL WORKFLOW ENDPOINTS
   // ============================================
+
+  /**
+   * AIDEV-NOTE: Delete a time entry
+   */
+  @Delete(':id')
+  @Roles(Role.ADMIN, Role.MANAGER, Role.USER)
+  @ApiOperation({ summary: 'Delete a time entry' })
+  async delete(@Param('id') id: string, @Request() req: any) {
+    const entry = await prisma.timeEntry.findUnique({
+      where: { id },
+    });
+
+    if (!entry) {
+      return { error: 'Time entry not found' };
+    }
+
+    // User can only delete their own entries unless admin
+    if (entry.userId !== req.user.id && req.user.role !== Role.ADMIN) {
+      return { error: 'Not authorized to delete this entry' };
+    }
+
+    await prisma.timeEntry.delete({
+      where: { id },
+    });
+
+    return { success: true, message: 'Time entry deleted' };
+  }
 
   /**
    * AIDEV-NOTE: Get time entries for a specific week
