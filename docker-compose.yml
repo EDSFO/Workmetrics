@@ -43,12 +43,6 @@ services:
         condition: service_healthy
     networks:
       - workmetrics-network
-    healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3001/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
 
   frontend:
     build:
@@ -65,12 +59,6 @@ services:
       - backend
     networks:
       - workmetrics-network
-    healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
 
   # Optional: Redis for caching (can be added later)
   # redis:
