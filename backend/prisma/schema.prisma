@@ -7,12 +7,72 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ============================================
+// Tenant Models (Multi-Tenant Support)
+// ============================================
+
+model Tenant {
+  id                String   @id @default(uuid())
+  name              String
+  slug              String   @unique // For custom URLs
+  logo              String?
+  primaryColor      String   @default("#3B82F6")
+  customDomain      String?
+  timezone          String   @default("America/Sao_Paulo")
+  planId            String   @map("plan_id")
+  stripeCustomerId  String?  @map("stripe_customer_id")
+  stripeSubscriptionId String? @map("stripe_subscription_id")
+  status            String   @default("ACTIVE") // ACTIVE, SUSPENDED, CANCELED
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  plan              Plan     @relation(fields: [planId], references: [id])
+  teams             Team[]
+  invitations       TenantInvitation[]
+
+  @@map("Tenant")
+}
+
+model Plan {
+  id           String   @id @default(uuid())
+  name         String   // Free, Starter, Pro, Enterprise
+  monthlyPrice Decimal  @map("monthly_price") @db.Decimal(10, 2)
+  maxUsers     Int      @default(-1) // -1 = unlimited
+  maxProjects  Int      @default(-1)
+  features     Json     @default("{}") // Feature flags
+  isActive     Boolean  @default(true)
+  sortOrder    Int      @default(0)
+
+  tenants      Tenant[]
+
+  @@map("Plan")
+}
+
+model TenantInvitation {
+  id        String   @id @default(uuid())
+  tenantId  String   @map("tenant_id")
+  email     String
+  token     String   @unique
+  role      String   @default("USER")
+  status    String   @default("PENDING")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@map("TenantInvitation")
+}
+
+// ============================================
+// Existing Models
+// ============================================
+
 model User {
   id           String    @id @default(uuid())
   email        String    @unique
   passwordHash String    @map("password_hash")
   name         String
-  role         String    @default("USER") // ADMIN, MANAGER, USER
+  role         String    @default("USER") // OWNER, ADMIN, MANAGER, USER
   teamId       String?   @map("team_id")
   hourlyRate   Decimal?  @map("hourly_rate") @db.Decimal(10, 2)
   createdAt    DateTime  @default(now()) @map("created_at")
@@ -29,16 +89,19 @@ model User {
 model Team {
   id        String   @id @default(uuid())
   name      String
+  tenantId  String   @map("tenant_id")
   ownerId   String   @unique @map("owner_id")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
   owner     User     @relation("TeamOwner", fields: [ownerId], references: [id])
   users     User[]
   projects  Project[]
   invitations TeamInvitation[]
 
   @@map("Team")
+  @@index([tenantId])
 }
 
 model Project {
