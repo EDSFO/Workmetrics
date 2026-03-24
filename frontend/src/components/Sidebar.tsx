@@ -23,7 +23,7 @@ export default function Sidebar() {
   // AIDEV-NOTE: Navigation items with role-based access
   const navigation: NavItem[] = [
     {
-      name: 'Dashboard',
+      name: 'Painel',
       href: '/',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -41,7 +41,7 @@ export default function Sidebar() {
       ),
     },
     {
-      name: 'Timer',
+      name: 'Cronômetro',
       href: '/timer',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -50,7 +50,7 @@ export default function Sidebar() {
       ),
     },
     {
-      name: 'Auto Track',
+      name: 'Auto Rastreamento',
       href: '/auto-tracker',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -59,7 +59,7 @@ export default function Sidebar() {
       ),
     },
     {
-      name: 'Projects',
+      name: 'Projetos',
       href: '/projects',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -68,7 +68,7 @@ export default function Sidebar() {
       ),
     },
     {
-      name: 'Reports',
+      name: 'Relatórios',
       href: '/reports',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -77,7 +77,7 @@ export default function Sidebar() {
       ),
     },
     {
-      name: 'Calendar',
+      name: 'Calendário',
       href: '/calendar',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -86,7 +86,7 @@ export default function Sidebar() {
       ),
     },
     {
-      name: 'Team',
+      name: 'Equipe',
       href: '/team',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -116,7 +116,7 @@ export default function Sidebar() {
       roles: ['ADMIN', 'MANAGER', 'USER'],
     },
     {
-      name: 'Time Off',
+      name: 'Férias e Licenças',
       href: '/time-off',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -125,7 +125,7 @@ export default function Sidebar() {
       ),
     },
     {
-      name: 'Settings',
+      name: 'Configurações',
       href: '/settings',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -250,12 +250,12 @@ export default function Sidebar() {
                 transition-colors duration-200
                 ${isCollapsed ? 'lg:justify-center' : ''}
               `}
-              title={isCollapsed ? 'Logout' : undefined}
+              title={isCollapsed ? 'Sair' : undefined}
             >
               <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
               </svg>
-              {!isCollapsed && <span className="font-medium">Logout</span>}
+              {!isCollapsed && <span className="font-medium">Sair</span>}
             </button>
           </div>
         </div>
