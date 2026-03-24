@@ -14,6 +14,8 @@ interface TeamMember {
   hourlyRate?: string;
   createdAt: string;
   updatedAt: string;
+  todayHours?: number;
+  weekHours?: number;
 }
 
 interface TeamInvitation {
@@ -31,6 +33,14 @@ function formatDate(dateStr: string): string {
     month: 'short',
     day: 'numeric',
   });
+}
+
+// Format hours
+function formatHours(seconds: number): string {
+  const hours = Math.floor(seconds / 3600);
+  const mins = Math.floor((seconds % 3600) / 60);
+  if (hours > 0) return `${hours}h ${mins}m`;
+  return `${mins}m`;
 }
 
 export default function TeamPage() {
@@ -58,14 +68,34 @@ export default function TeamPage() {
     setError(null);
     try {
       const response = await api.get('/team/members');
-      setMembers(response.data.users || []);
+      const users = response.data.users || [];
+
+      // Fetch today's hours for each member if admin/manager
+      if (canManageTeam && users.length > 0) {
+        const today = new Date().toISOString().split('T')[0];
+        const todayRes = await api.get(`/reports/daily-summary?date=${today}`);
+        const dailyData = todayRes.data || {};
+
+        // Calculate hours per user from daily summary
+        const usersWithHours = users.map((member: TeamMember) => {
+          const memberSummary = dailyData.users?.find((u: any) => u.userId === member.id);
+          return {
+            ...member,
+            todayHours: memberSummary?.totalSeconds || 0,
+            weekHours: 0, // Could add weekly fetch if needed
+          };
+        });
+        setMembers(usersWithHours);
+      } else {
+        setMembers(users);
+      }
     } catch (err: any) {
       console.error('Failed to fetch team members:', err);
       setError(err.response?.data?.message || 'Failed to load team members');
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [canManageTeam]);
 
   // Fetch teams (admin only)
   const fetchTeams = useCallback(async () => {
@@ -401,6 +431,7 @@ export default function TeamPage() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Today</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Joined</th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
                 </tr>
@@ -440,6 +471,17 @@ export default function TeamPage() {
                         }`}>
                           {member.role}
                         </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {canManageTeam ? (
+                        <span className={`text-sm font-medium ${
+                          (member.todayHours || 0) > 0 ? 'text-green-600' : 'text-gray-400'
+                        }`}>
+                          {formatHours(member.todayHours || 0)}
+                        </span>
+                      ) : (
+                        <span className="text-sm text-gray-400">-</span>
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
