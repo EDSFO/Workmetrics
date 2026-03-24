@@ -148,6 +148,12 @@ export const useAuthStore = create<AuthState>()(
         const userRole = user.role === 'USER' ? 'MEMBER' : user.role;
         return ROLE_HIERARCHY[userRole as UserRole] >= ROLE_HIERARCHY[minRole];
       },
+
+      // AIDEV-NOTE: Check if user has access to admin features
+      hasAdminAccess: () => {
+        const { user } = get();
+        return user?.role === 'OWNER' || user?.role === 'ADMIN';
+      },
     }),
     {
       name: 'workmetrics-auth',
