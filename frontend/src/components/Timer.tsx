@@ -157,7 +157,7 @@ export default function Timer() {
       setActiveEntry(response.data.timeEntry);
       setElapsedSeconds(0);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to start timer');
+      setError(err.response?.data?.message || 'Falha ao iniciar cronômetro');
     } finally {
       setIsLoading(false);
     }
@@ -185,7 +185,7 @@ export default function Timer() {
       const total = entries.reduce((sum: number, e: TimeEntry) => sum + (e.duration || 0), 0);
       setTodayTotal(total);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to stop timer');
+      setError(err.response?.data?.message || 'Falha ao parar cronômetro');
     } finally {
       setIsLoading(false);
     }
@@ -194,7 +194,7 @@ export default function Timer() {
   // Handle discard entry
   const handleDiscard = useCallback(async () => {
     if (!activeEntry) return;
-    if (!confirm('Are you sure you want to discard this entry?')) return;
+    if (!confirm('Tem certeza que deseja descartar esta entrada?')) return;
     setIsLoading(true);
     setError(null);
     try {
@@ -205,7 +205,7 @@ export default function Timer() {
       setSelectedTaskId('');
       setDescription('');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to discard entry');
+      setError(err.response?.data?.message || 'Falha ao descartar entrada');
     } finally {
       setIsLoading(false);
     }
@@ -213,7 +213,7 @@ export default function Timer() {
 
   return (
     <div className="p-6 border rounded-lg shadow-sm bg-white">
-      <h2 className="text-xl font-semibold mb-4">Time Tracker</h2>
+      <h2 className="text-xl font-semibold mb-4">Rastreador de Tempo</h2>
 
       {/* Error message */}
       {error && (
@@ -230,18 +230,18 @@ export default function Timer() {
         {activeEntry && (
           <div className="mt-2 text-sm text-green-600 font-medium flex items-center justify-center gap-2">
             <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-            Running
+            Em andamento
           </div>
         )}
         {!activeEntry && (
-          <p className="mt-2 text-sm text-muted-foreground">Ready to start</p>
+          <p className="mt-2 text-sm text-muted-foreground">Pronto para iniciar</p>
         )}
       </div>
 
       {/* Today's Summary */}
       {!activeEntry && todayTotal > 0 && (
         <div className="mb-4 p-3 bg-muted rounded-lg text-center">
-          <p className="text-sm text-muted-foreground">Today&apos;s Total</p>
+          <p className="text-sm text-muted-foreground">Total de Hoje</p>
           <p className="text-xl font-bold">{formatShortDuration(todayTotal)}</p>
         </div>
       )}
@@ -249,7 +249,7 @@ export default function Timer() {
       {/* Project Selector */}
       <div className="mb-4">
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          Project
+          Projeto
         </label>
         <select
           value={selectedProjectId}
@@ -260,7 +260,7 @@ export default function Timer() {
           disabled={!!activeEntry || isLoading}
           className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
         >
-          <option value="">No Project</option>
+          <option value="">Sem Projeto</option>
           {projects.map((project) => (
             <option key={project.id} value={project.id}>
               {project.name}
@@ -272,7 +272,7 @@ export default function Timer() {
       {/* Task Selector */}
       <div className="mb-4">
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          Task (optional)
+          Tarefa (opcional)
         </label>
         <select
           value={selectedTaskId}
@@ -280,7 +280,7 @@ export default function Timer() {
           disabled={!!activeEntry || isLoading || !selectedProjectId}
           className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
         >
-          <option value="">No Task</option>
+          <option value="">Sem Tarefa</option>
           {tasks.map((task) => (
             <option key={task.id} value={task.id}>
               {task.name}
@@ -292,14 +292,14 @@ export default function Timer() {
       {/* Description */}
       <div className="mb-4">
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          Description (optional)
+          Descrição (opcional)
         </label>
         <input
           type="text"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           disabled={!!activeEntry || isLoading}
-          placeholder="What are you working on?"
+          placeholder="Em que você está trabalhando?"
           className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
         />
       </div>
@@ -312,7 +312,7 @@ export default function Timer() {
             disabled={isLoading}
             className="flex-1 px-4 py-3 bg-green-500 text-white font-semibold rounded-md hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
           >
-            {isLoading ? 'Starting...' : 'Start Timer'}
+            {isLoading ? 'Iniciando...' : 'Iniciar Cronômetro'}
           </button>
         ) : (
           <>
@@ -321,15 +321,15 @@ export default function Timer() {
               disabled={isLoading}
               className="flex-1 px-4 py-3 bg-red-500 text-white font-semibold rounded-md hover:bg-red-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
             >
-              {isLoading ? 'Stopping...' : 'Stop Timer'}
+              {isLoading ? 'Parando...' : 'Parar Cronômetro'}
             </button>
             <button
               onClick={handleDiscard}
               disabled={isLoading}
               className="px-4 py-3 bg-gray-300 text-gray-700 font-semibold rounded-md hover:bg-gray-400 disabled:bg-gray-200 disabled:cursor-not-allowed transition-colors"
-              title="Discard entry"
+              title="Descartar entrada"
             >
-              Discard
+              Descartar
             </button>
           </>
         )}
@@ -339,7 +339,7 @@ export default function Timer() {
       {activeEntry && activeEntry.project && (
         <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded text-sm">
           <p className="font-medium text-blue-800">
-            Working on: {activeEntry.project.name}
+            Trabalhando em: {activeEntry.project.name}
             {activeEntry.task && ` / ${activeEntry.task.name}`}
           </p>
           {activeEntry.description && (
