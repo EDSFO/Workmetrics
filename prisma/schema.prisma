@@ -184,3 +184,87 @@ model TimeOffPolicy {
 
   @@map("TimeOffPolicy")
 }
+
+model ApiKey {
+  id          String   @id @default(uuid())
+  name        String   // Friendly name for the integration
+  key         String   @unique @map("api_key") // The actual API key (hashed)
+  keyPrefix   String   @map("key_prefix") // First 8 chars for identification
+  teamId      String   @map("team_id")
+  permissions String[]  // Specific endpoints allowed
+  expiresAt   DateTime? @map("expires_at")
+  lastUsedAt  DateTime? @map("last_used_at")
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  team Team @relation(fields: [teamId], references: [id])
+
+  @@index([key])
+  @@index([teamId])
+  @@map("ApiKey")
+}
+
+model Webhook {
+  id          String   @id @default(uuid())
+  teamId      String   @map("team_id")
+  url         String   @map("webhook_url")
+  events      String[] // Event types to trigger
+  secret      String   @map("webhook_secret") // For signature verification
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  team Team @relation(fields: [teamId], references: [id])
+
+  @@index([teamId])
+  @@map("Webhook")
+}
+
+model WebhookDelivery {
+  id          String   @id @default(uuid())
+  webhookId   String   @map("webhook_id")
+  event       String   @map("event_type")
+  payload     String   @db.Text // JSON payload
+  status      String   @default("PENDING") // PENDING, SENT, FAILED
+  attempts    Int      @default(0)
+  response    String?  @db.Text
+  deliveredAt DateTime? @map("delivered_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  webhook Webhook @relation(fields: [webhookId], references: [id])
+
+  @@index([webhookId])
+  @@index([status])
+  @@map("WebhookDelivery")
+}
+
+model Integration {
+  id        String   @id @default(uuid())
+  teamId    String   @map("team_id")
+  type      String   // slack, jira, linear
+  config    Json     // Type-specific configuration
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  lastUsedAt DateTime? @map("last_used_at")
+
+  team  Team               @relation(fields: [teamId], references: [id])
+  links IntegrationLink[]
+
+  @@index([teamId])
+  @@index([type])
+  @@map("Integration")
+}
+
+model IntegrationLink {
+  id             String   @id @default(uuid())
+  integrationId  String   @map("integration_id")
+  externalId     String   @map("external_id") // e.g., Jira issue key, Linear issue ID
+  timeEntryId   String?  @map("time_entry_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  integration Integration @relation(fields: [integrationId], references: [id])
+
+  @@index([integrationId])
+  @@index([timeEntryId])
+  @@map("IntegrationLink")
+}

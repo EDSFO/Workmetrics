@@ -11,6 +11,9 @@ import { CalendarModule } from './calendar/calendar.module';
 import { SchedulingModule } from './scheduling/scheduling.module';
 import { ApprovalsModule } from './approvals/approvals.module';
 import { TimeOffModule } from './time-off/time-off.module';
+import { ApiModule } from './api/api.module';
+import { WebhookModule } from './webhooks/webhook.module';
+import { IntegrationsModule } from './integrations/integrations.module';
 
 @Module({
   imports: [
@@ -26,6 +29,9 @@ import { TimeOffModule } from './time-off/time-off.module';
     SchedulingModule,
     ApprovalsModule,
     TimeOffModule,
+    ApiModule,
+    WebhookModule,
+    IntegrationsModule,
   ],
 })
 export class AppModule {}
