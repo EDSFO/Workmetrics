@@ -19,10 +19,12 @@ import { GdprModule } from './gdpr/gdpr.module';
 import { AuditModule } from './audit/audit.module';
 import { StandardTasksModule } from './standard-tasks/standard-tasks.module';
 import { TenantModule } from './tenant/tenant.module';
+import { PaymentModule } from './payment/payment.module';
 
 @Module({
   imports: [
     TenantModule,
+    PaymentModule,
     AuthModule,
     UsersModule,
     ProjectsModule,
