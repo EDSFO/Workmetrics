@@ -220,7 +220,7 @@ export default function AutoTracker() {
   return (
     <div className="p-6 border rounded-lg shadow-sm bg-white">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold">Auto Tracker</h2>
+        <h2 className="text-xl font-semibold">Rastreador Automático</h2>
         <span className={`px-3 py-1 rounded-full text-sm ${isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
           {isActive ? '🟢 Ativo' : '⚪ Inativo'}
         </span>
