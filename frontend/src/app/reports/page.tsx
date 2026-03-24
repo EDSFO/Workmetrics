@@ -79,6 +79,49 @@ function formatDateForInput(dateString: string): string {
   return new Date(dateString).toISOString().split('T')[0];
 }
 
+function getDateRange(preset: string): { start: Date; end: Date } {
+  const today = new Date();
+  today.setHours(23, 59, 59, 999);
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+
+  switch (preset) {
+    case 'today':
+      return { start, end: today };
+    case 'yesterday': {
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      return { start: yesterday, end: yesterday };
+    }
+    case 'this-week': {
+      const dayOfWeek = start.getDay();
+      const diff = start.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+      const weekStart = new Date(start);
+      weekStart.setDate(diff);
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekEnd.getDate() + 6);
+      weekEnd.setHours(23, 59, 59, 999);
+      return { start: weekStart, end: weekEnd };
+    }
+    case 'this-month': {
+      const monthStart = new Date(start.getFullYear(), start.getMonth(), 1);
+      const monthEnd = new Date(start.getFullYear(), start.getMonth() + 1, 0, 23, 59, 59, 999);
+      return { start: monthStart, end: monthEnd };
+    }
+    case 'last-7': {
+      const last7 = new Date(start);
+      last7.setDate(last7.getDate() - 6);
+      return { start: last7, end: today };
+    }
+    case 'last-30':
+    default: {
+      const last30 = new Date(start);
+      last30.setDate(last30.getDate() - 29);
+      return { start: last30, end: today };
+    }
+  }
+}
+
 export default function ReportsPage() {
   const { user, logout, isManager } = useAuthStore();
 
@@ -230,6 +273,33 @@ export default function ReportsPage() {
 
       {/* Filters */}
       <div className="bg-card rounded-lg border p-4 space-y-4">
+        {/* Quick date presets */}
+        <div className="flex flex-wrap gap-2">
+          {[
+            { key: 'today', label: 'Today' },
+            { key: 'yesterday', label: 'Yesterday' },
+            { key: 'this-week', label: 'This Week' },
+            { key: 'this-month', label: 'This Month' },
+            { key: 'last-7', label: 'Last 7 Days' },
+            { key: 'last-30', label: 'Last 30 Days' },
+          ].map(preset => (
+            <button
+              key={preset.key}
+              onClick={() => {
+                const range = getDateRange(preset.key);
+                setFilters(prev => ({
+                  ...prev,
+                  startDate: formatDateForInput(range.start),
+                  endDate: formatDateForInput(range.end),
+                }));
+              }}
+              className="px-3 py-1 text-sm bg-muted hover:bg-muted-foreground/20 rounded-md transition-colors"
+            >
+              {preset.label}
+            </button>
+          ))}
+        </div>
+
         <div className="flex flex-wrap gap-4 items-end">
           <div>
             <label className="block text-sm font-medium mb-1">Start Date</label>
