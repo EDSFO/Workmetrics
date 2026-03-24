@@ -215,9 +215,9 @@ export default function TeamPage() {
   if (!user) {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center p-24">
-        <h1 className="text-4xl font-bold mb-4">Please login</h1>
+        <h1 className="text-4xl font-bold mb-4">Por favor, faça login</h1>
         <p className="text-lg text-muted-foreground">
-          You need to login to access this page
+          Você precisa fazer login para acessar esta página
         </p>
       </main>
     );
@@ -227,12 +227,12 @@ export default function TeamPage() {
   if (!canManageTeam) {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center p-24">
-        <h1 className="text-4xl font-bold mb-4">Access Denied</h1>
+        <h1 className="text-4xl font-bold mb-4">Acesso Negado</h1>
         <p className="text-lg text-muted-foreground">
-          You need to be a manager or admin to view this page
+          Você precisa ser gerente ou admin para ver esta página
         </p>
         <Link href="/" className="mt-4 text-blue-500 hover:underline">
-          Go back home
+          Voltar para home
         </Link>
       </main>
     );
@@ -245,12 +245,12 @@ export default function TeamPage() {
         <div>
           <div className="flex items-center gap-4">
             <Link href="/" className="text-blue-500 hover:underline">
-              &larr; Back
+              ← Voltar
             </Link>
-            <h1 className="text-3xl font-bold">Team Management</h1>
+            <h1 className="text-3xl font-bold">Gerenciamento de Equipe</h1>
           </div>
           <p className="text-muted-foreground mt-1">
-            Manage your team members and their access
+            Gerencie membros da equipe e seus acessos
           </p>
         </div>
         {canManageTeam && (
@@ -261,9 +261,9 @@ export default function TeamPage() {
                   setShowTeamForm(true);
                   setSuccessMessage(null);
                 }}
-                className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
               >
-                + New Team
+                + Nova Equipe
               </button>
             )}
             <button
@@ -272,9 +272,9 @@ export default function TeamPage() {
                 setInvitationLink(null);
                 setSuccessMessage(null);
               }}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
             >
-              + Invite Member
+              + Convidar Membro
             </button>
           </div>
         )}
@@ -282,19 +282,19 @@ export default function TeamPage() {
 
       {/* Messages */}
       {error && (
-        <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+        <div className="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
           {error}
           <button onClick={() => setError(null)} className="ml-4 text-red-500 hover:underline">
-            Dismiss
+            Fechar
           </button>
         </div>
       )}
 
       {successMessage && (
-        <div className="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
+        <div className="mb-4 p-4 bg-green-50 border border-green-200 text-green-700 rounded-lg">
           {successMessage}
           <button onClick={() => setSuccessMessage(null)} className="ml-4 text-green-500 hover:underline">
-            Dismiss
+            Fechar
           </button>
         </div>
       )}
@@ -302,16 +302,16 @@ export default function TeamPage() {
       {/* Create Team Form */}
       {showTeamForm && isAdmin() && (
         <div className="mb-8 p-6 border rounded-lg shadow-sm bg-white">
-          <h2 className="text-xl font-semibold mb-4">Create New Team</h2>
+          <h2 className="text-xl font-semibold mb-4">Criar Nova Equipe</h2>
           <form onSubmit={handleCreateTeam} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Team Name *</label>
+              <label className="block text-sm font-medium mb-1">Nome da Equipe *</label>
               <input
                 type="text"
                 value={teamName}
                 onChange={(e) => setTeamName(e.target.value)}
-                className="w-full px-3 py-2 border rounded"
-                placeholder="My New Team"
+                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Minha Nova Equipe"
                 required
               />
             </div>
@@ -319,9 +319,9 @@ export default function TeamPage() {
               <button
                 type="submit"
                 disabled={isCreatingTeam}
-                className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:bg-gray-400"
+                className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:bg-gray-400 transition-colors"
               >
-                {isCreatingTeam ? 'Creating...' : 'Create Team'}
+                {isCreatingTeam ? 'Criando...' : 'Criar Equipe'}
               </button>
               <button
                 type="button"
@@ -329,9 +329,9 @@ export default function TeamPage() {
                   setShowTeamForm(false);
                   setTeamName('');
                 }}
-                className="px-4 py-2 border rounded hover:bg-gray-100"
+                className="px-4 py-2 border rounded hover:bg-gray-100 transition-colors"
               >
-                Cancel
+                Cancelar
               </button>
             </div>
           </form>
@@ -341,45 +341,45 @@ export default function TeamPage() {
       {/* Invite Form */}
       {showInviteForm && canManageTeam && (
         <div className="mb-8 p-6 border rounded-lg shadow-sm bg-white">
-          <h2 className="text-xl font-semibold mb-4">Invite New Team Member</h2>
+          <h2 className="text-xl font-semibold mb-4">Convidar Novo Membro</h2>
           <form onSubmit={handleInvite} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Email Address *</label>
+              <label className="block text-sm font-medium mb-1">Email *</label>
               <input
                 type="email"
                 value={inviteEmail}
                 onChange={(e) => setInviteEmail(e.target.value)}
-                className="w-full px-3 py-2 border rounded"
-                placeholder="colleague@company.com"
+                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="colega@empresa.com"
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Role</label>
+              <label className="block text-sm font-medium mb-1">Função</label>
               <select
                 value={inviteRole}
                 onChange={(e) => setInviteRole(e.target.value)}
-                className="w-full px-3 py-2 border rounded"
+                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 disabled={!isAdmin()}
               >
-                <option value="USER">User</option>
-                <option value="MANAGER">Manager</option>
+                <option value="USER">Usuário</option>
+                <option value="MANAGER">Gerente</option>
                 {isAdmin() && <option value="ADMIN">Admin</option>}
               </select>
               {!isAdmin() && (
-                <p className="text-xs text-gray-500 mt-1">Only admins can assign Manager or Admin roles</p>
+                <p className="text-xs text-gray-500 mt-1">Apenas admins podem atribuir função de Gerente ou Admin</p>
               )}
             </div>
 
             {invitationLink && (
-              <div className="p-4 bg-blue-50 border border-blue-200 rounded">
-                <p className="font-medium text-blue-700 mb-2">Invitation Created!</p>
-                <p className="text-sm text-blue-600 mb-2">Share this token with the invited user:</p>
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="font-medium text-blue-700 mb-2">✅ Convite Criado!</p>
+                <p className="text-sm text-blue-600 mb-2">Compartilhe este token com o usuário convidado:</p>
                 <code className="block p-2 bg-white border rounded text-sm font-mono break-all">
                   {invitationLink}
                 </code>
                 <p className="text-xs text-blue-500 mt-2">
-                  The user needs to use this token to register at /register?token={invitationLink}
+                  O usuário precisa usar este token para se registrar em /register?token={invitationLink}
                 </p>
               </div>
             )}
@@ -389,9 +389,9 @@ export default function TeamPage() {
                 <button
                   type="submit"
                   disabled={isInviting}
-                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 transition-colors"
                 >
-                  {isInviting ? 'Creating...' : 'Send Invitation'}
+                  {isInviting ? 'Criando...' : 'Enviar Convite'}
                 </button>
               )}
               <button
@@ -403,9 +403,9 @@ export default function TeamPage() {
                   setInvitationLink(null);
                   setError(null);
                 }}
-                className="px-4 py-2 border rounded hover:bg-gray-100"
+                className="px-4 py-2 border rounded hover:bg-gray-100 transition-colors"
               >
-                {invitationLink ? 'Close' : 'Cancel'}
+                {invitationLink ? 'Fechar' : 'Cancelar'}
               </button>
             </div>
           </form>
@@ -414,36 +414,36 @@ export default function TeamPage() {
 
       {/* Team Members List */}
       <div>
-        <h2 className="text-xl font-semibold mb-4">Team Members</h2>
+        <h2 className="text-xl font-semibold mb-4">Membros da Equipe</h2>
         {isLoading && (
-          <div className="text-center py-8 text-gray-500">Loading team members...</div>
+          <div className="text-center py-8 text-gray-500">Carregando membros...</div>
         )}
         {!isLoading && members.length === 0 && (
-          <div className="text-center py-8 text-gray-500">
-            No team members found. Invite your first team member!
+          <div className="text-center py-8 text-gray-500 bg-white rounded-lg border">
+            Nenhum membro encontrado. Convide seu primeiro membro!
           </div>
         )}
         {!isLoading && members.length > 0 && (
-          <div className="border rounded-lg shadow-sm overflow-hidden">
+          <div className="border rounded-lg shadow-sm overflow-hidden bg-white">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nome</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Today</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Joined</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Função</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hoje</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Desde</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Ações</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-200">
                 {members.map((member) => (
-                  <tr key={member.id}>
+                  <tr key={member.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">
                         {member.name}
                         {member.id === user.id && (
-                          <span className="ml-2 text-xs text-gray-500">(You)</span>
+                          <span className="ml-2 text-xs text-gray-500">(Você)</span>
                         )}
                       </div>
                     </td>
@@ -455,10 +455,10 @@ export default function TeamPage() {
                         <select
                           value={member.role}
                           onChange={(e) => handleChangeRole(member.id, e.target.value)}
-                          className="text-sm border rounded px-2 py-1"
+                          className="text-sm border rounded px-2 py-1 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
-                          <option value="USER">User</option>
-                          <option value="MANAGER">Manager</option>
+                          <option value="USER">Usuário</option>
+                          <option value="MANAGER">Gerente</option>
                           {isAdmin() && <option value="ADMIN">Admin</option>}
                         </select>
                       ) : (
@@ -469,7 +469,7 @@ export default function TeamPage() {
                             ? 'bg-yellow-100 text-yellow-800'
                             : 'bg-blue-100 text-blue-800'
                         }`}>
-                          {member.role}
+                          {member.role === 'ADMIN' ? 'Admin' : member.role === 'MANAGER' ? 'Gerente' : 'Usuário'}
                         </span>
                       )}
                     </td>
@@ -491,9 +491,9 @@ export default function TeamPage() {
                       {canManageTeam && member.id !== user.id && (
                         <button
                           onClick={() => handleRemoveMember(member.id, member.name)}
-                          className="text-red-600 hover:text-red-900 text-sm"
+                          className="text-red-600 hover:text-red-900 text-sm px-3 py-1 rounded hover:bg-red-50 transition-colors"
                         >
-                          Remove
+                          Remover
                         </button>
                       )}
                     </td>
