@@ -19,12 +19,12 @@ export default function RegisterPage() {
     setLocalError('');
 
     if (password !== confirmPassword) {
-      setLocalError('Passwords do not match');
+      setLocalError('As senhas não coincidem');
       return;
     }
 
     if (password.length < 6) {
-      setLocalError('Password must be at least 6 characters');
+      setLocalError('A senha deve ter pelo menos 6 caracteres');
       return;
     }
 
@@ -39,7 +39,7 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="max-w-md w-full p-8 bg-white rounded-lg shadow-md">
-        <h1 className="text-2xl font-bold text-center mb-6">Create Account</h1>
+        <h1 className="text-2xl font-bold text-center mb-6">Criar Conta</h1>
 
         {(error || localError) && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-md text-sm">
@@ -50,7 +50,7 @@ export default function RegisterPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-              Full Name
+              Nome Completo
             </label>
             <input
               id="name"
@@ -78,7 +78,7 @@ export default function RegisterPage() {
 
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-              Password
+              Senha
             </label>
             <input
               id="password"
@@ -93,7 +93,7 @@ export default function RegisterPage() {
 
           <div>
             <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
-              Confirm Password
+              Confirmar Senha
             </label>
             <input
               id="confirmPassword"
@@ -110,14 +110,14 @@ export default function RegisterPage() {
             disabled={isLoading}
             className="w-full py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            {isLoading ? 'Creating account...' : 'Register'}
+            {isLoading ? 'Criando conta...' : 'Cadastrar'}
           </button>
         </form>
 
         <p className="mt-4 text-center text-sm text-gray-600">
-          Already have an account?{' '}
+          Já tem uma conta?{' '}
           <Link href="/login" className="text-blue-600 hover:underline">
-            Login
+            Entrar
           </Link>
         </p>
       </div>
