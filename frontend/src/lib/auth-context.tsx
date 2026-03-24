@@ -6,14 +6,26 @@ import axios from 'axios';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/v1';
 
-// AIDEV-NOTE: Role types for RBAC
-export type UserRole = 'ADMIN' | 'MANAGER' | 'USER';
+// AIDEV-NOTE: Extended role types for RBAC system
+// Hierarchy: OWNER > ADMIN > MANAGER > MEMBER > CLIENT
+export type UserRole = 'OWNER' | 'ADMIN' | 'MANAGER' | 'MEMBER' | 'CLIENT' | 'USER';
+
+// AIDEV-NOTE: Role hierarchy levels
+export const ROLE_HIERARCHY: Record<UserRole, number> = {
+  OWNER: 100,
+  ADMIN: 80,
+  MANAGER: 60,
+  MEMBER: 40,
+  CLIENT: 20,
+  USER: 40, // USER is alias for MEMBER
+};
 
 interface User {
   id: string;
   email: string;
   name: string;
   role: UserRole;
+  teamId?: string;
 }
 
 interface AuthState {
@@ -26,9 +38,13 @@ interface AuthState {
   logout: () => void;
   checkAuth: () => Promise<void>;
   // AIDEV-NOTE: Role-based helper functions
+  isOwner: () => boolean;
   isAdmin: () => boolean;
   isManager: () => boolean;
+  isMember: () => boolean;
+  isClient: () => boolean;
   hasRole: (roles: UserRole[]) => boolean;
+  hasMinRole: (minRole: UserRole) => boolean;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -96,19 +112,41 @@ export const useAuthStore = create<AuthState>()(
       },
 
       // AIDEV-NOTE: Role-based helper functions
+      isOwner: () => {
+        const { user } = get();
+        return user?.role === 'OWNER';
+      },
+
       isAdmin: () => {
         const { user } = get();
-        return user?.role === 'ADMIN';
+        return user?.role === 'OWNER' || user?.role === 'ADMIN';
       },
 
       isManager: () => {
         const { user } = get();
-        return user?.role === 'MANAGER' || user?.role === 'ADMIN';
+        return user?.role === 'OWNER' || user?.role === 'ADMIN' || user?.role === 'MANAGER';
+      },
+
+      isMember: () => {
+        const { user } = get();
+        return user?.role === 'MEMBER' || user?.role === 'USER';
+      },
+
+      isClient: () => {
+        const { user } = get();
+        return user?.role === 'CLIENT';
       },
 
       hasRole: (roles: UserRole[]) => {
         const { user } = get();
         return user ? roles.includes(user.role) : false;
+      },
+
+      hasMinRole: (minRole: UserRole) => {
+        const { user } = get();
+        if (!user) return false;
+        const userRole = user.role === 'USER' ? 'MEMBER' : user.role;
+        return ROLE_HIERARCHY[userRole as UserRole] >= ROLE_HIERARCHY[minRole];
       },
     }),
     {

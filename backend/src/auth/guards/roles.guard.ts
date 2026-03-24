@@ -1,9 +1,8 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { Role } from '../roles/role.enum';
+import { Role, hasRoleLevel } from '../roles/role.enum';
 import { ROLES_KEY } from '../roles/roles.decorator';
 
-// AIDEV-NOTE: Guard that checks user role against allowed roles
 @Injectable()
 export class RolesGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
@@ -14,11 +13,18 @@ export class RolesGuard implements CanActivate {
       context.getClass(),
     ]);
 
-    if (!requiredRoles) {
+    if (!requiredRoles || requiredRoles.length === 0) {
       return true;
     }
 
     const { user } = context.switchToHttp().getRequest();
-    return requiredRoles.some((role) => user.role === role);
+    const userRole = user.role as Role;
+
+    // AIDEV-NOTE: Convert legacy USER role to MEMBER for hierarchy checks
+    const effectiveRole = userRole === 'USER' ? Role.MEMBER : userRole;
+
+    // AIDEV-NOTE: Check if user has equal or higher role than any of the required roles
+    // Using 'any' logic - user just needs ONE of the specified roles
+    return requiredRoles.some(requiredRole => hasRoleLevel(effectiveRole, requiredRole));
   }
 }

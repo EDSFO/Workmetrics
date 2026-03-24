@@ -82,6 +82,8 @@ model TimeEntry {
   duration    Int?      // Duration in seconds
   description String?   @db.Text
   billable    Boolean   @default(true)
+  type        String    @default("TIME") // TIME, CLOCK_IN, CLOCK_OUT, PAUSE, RESUME, AUTO
+  status      String    @default("APPROVED") // PENDING, APPROVED, REJECTED
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
@@ -92,6 +94,8 @@ model TimeEntry {
   @@index([userId])
   @@index([projectId])
   @@index([startTime])
+  @@index([endTime])
+  @@index([userId, startTime])
   @@map("TimeEntry")
 }
 

@@ -10,7 +10,7 @@ interface NavItem {
   name: string;
   href: string;
   icon: React.ReactNode;
-  roles?: ('ADMIN' | 'MANAGER' | 'USER')[];
+  roles?: ('OWNER' | 'ADMIN' | 'MANAGER' | 'MEMBER' | 'CLIENT')[];
 }
 
 // AIDEV-NOTE: Sidebar component with responsive navigation
@@ -77,6 +77,15 @@ export default function Sidebar() {
       ),
     },
     {
+      name: 'Calendar',
+      href: '/calendar',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+      ),
+    },
+    {
       name: 'Team',
       href: '/team',
       icon: (
@@ -118,11 +127,12 @@ export default function Sidebar() {
     },
   ];
 
-  // AIDEV-NOTE: Filter navigation items based on user role
+  // AIDEV-NOTE: Filter navigation items based on user role hierarchy
+  const { hasMinRole } = useAuthStore();
   const filteredNavigation = navigation.filter((item) => {
     if (!item.roles) return true;
-    if (isAdmin()) return true;
-    return item.roles.includes(user?.role as 'ADMIN' | 'MANAGER' | 'USER');
+    // AIDEV-NOTE: If user has any of the required roles (or higher), show the item
+    return item.roles.some(role => hasMinRole(role));
   });
 
   const isActive = (href: string) => {
