@@ -18,9 +18,11 @@ import { SsoModule } from './sso/sso.module';
 import { GdprModule } from './gdpr/gdpr.module';
 import { AuditModule } from './audit/audit.module';
 import { StandardTasksModule } from './standard-tasks/standard-tasks.module';
+import { TenantModule } from './tenant/tenant.module';
 
 @Module({
   imports: [
+    TenantModule,
     AuthModule,
     UsersModule,
     ProjectsModule,

@@ -8,14 +8,15 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TeamsModule = void 0;
 const common_1 = require("@nestjs/common");
+const teams_controller_1 = require("./teams.controller");
+const users_service_1 = require("../users/users.service");
 let TeamsModule = class TeamsModule {
 };
 exports.TeamsModule = TeamsModule;
 exports.TeamsModule = TeamsModule = __decorate([
     (0, common_1.Module)({
-        imports: [],
-        controllers: [],
-        providers: [],
+        controllers: [teams_controller_1.TeamsController],
+        providers: [users_service_1.UsersService],
     })
 ], TeamsModule);
 //# sourceMappingURL=teams.module.js.map

@@ -8,13 +8,13 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TimeEntriesModule = void 0;
 const common_1 = require("@nestjs/common");
+const time_entries_controller_1 = require("./time-entries.controller");
 let TimeEntriesModule = class TimeEntriesModule {
 };
 exports.TimeEntriesModule = TimeEntriesModule;
 exports.TimeEntriesModule = TimeEntriesModule = __decorate([
     (0, common_1.Module)({
-        imports: [],
-        controllers: [],
+        controllers: [time_entries_controller_1.TimeEntriesController],
         providers: [],
     })
 ], TimeEntriesModule);

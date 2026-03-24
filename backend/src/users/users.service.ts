@@ -22,6 +22,13 @@ export class UsersService implements OnModuleInit, OnModuleDestroy {
   async findById(id: string) {
     return prisma.user.findUnique({
       where: { id },
+      include: {
+        team: {
+          include: {
+            tenant: true,
+          },
+        },
+      },
     });
   }
 

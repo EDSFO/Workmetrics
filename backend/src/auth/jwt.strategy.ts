@@ -18,13 +18,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (!user) {
       throw new UnauthorizedException();
     }
-    // AIDEV-NOTE: Include role in the validated user object for RBAC
+    // Include tenantId in the validated user object for multi-tenant access
     return {
-      id: user.id,
+      userId: user.id,
       email: user.email,
       name: user.name,
       role: user.role,
       teamId: user.teamId,
+      tenantId: user.team?.tenant?.id || null,
     };
   }
 }
