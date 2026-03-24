@@ -232,92 +232,105 @@ export default function Home() {
         )}
       </div>
 
-      {/* Role-based menu - now shown as quick access cards */}
+      {/* Quick Access Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-        {/* Common section - All authenticated users */}
-        <div className="p-4 md:p-6 border rounded-lg shadow-sm">
-          <h2 className="text-lg md:text-xl font-semibold mb-3 md:mb-4">My Time Entries</h2>
-          <p className="text-muted-foreground mb-3 md:mb-4 text-sm">
-            Track and manage your time entries
-          </p>
-          <button className="px-3 md:px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm">
-            View My Entries
-          </button>
-        </div>
-
-        {/* Admin only section */}
-        {isAdmin() && (
-          <>
-            <div className="p-4 md:p-6 border rounded-lg shadow-sm border-red-200">
-              <h2 className="text-lg md:text-xl font-semibold mb-3 md:mb-4 text-red-600">Admin Panel</h2>
-              <p className="text-muted-foreground mb-3 md:mb-4 text-sm">
-                Manage all users and system settings
-              </p>
-              <div className="space-y-2">
-                <button className="block w-full text-left px-3 md:px-4 py-2 bg-red-100 text-red-700 rounded hover:bg-red-200 text-sm">
-                  System Settings
-                </button>
-              </div>
+        {/* Timer Card */}
+        <a href="/timer" className="p-4 md:p-6 border rounded-lg shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
             </div>
+            <h2 className="text-lg font-semibold">Timer</h2>
+          </div>
+          <p className="text-muted-foreground text-sm">Start tracking time with the timer</p>
+        </a>
 
-            <div className="p-4 md:p-6 border rounded-lg shadow-sm border-red-200">
-              <h2 className="text-lg md:text-xl font-semibold mb-3 md:mb-4 text-red-600">All Users</h2>
-              <p className="text-muted-foreground mb-3 md:mb-4 text-sm">
-                View and manage all registered users
-              </p>
-              <button className="px-3 md:px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm inline-block">
-                View All Users
-              </button>
+        {/* Calendar Card */}
+        <a href="/calendar" className="p-4 md:p-6 border rounded-lg shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-2 bg-purple-100 rounded-lg">
+              <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
             </div>
-          </>
-        )}
+            <h2 className="text-lg font-semibold">Calendar</h2>
+          </div>
+          <p className="text-muted-foreground text-sm">View your time entries in calendar</p>
+        </a>
 
-        {/* Manager section - Admin can also access */}
+        {/* Reports Card */}
+        <a href="/reports" className="p-4 md:p-6 border rounded-lg shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-2 bg-green-100 rounded-lg">
+              <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            </div>
+            <h2 className="text-lg font-semibold">Reports</h2>
+          </div>
+          <p className="text-muted-foreground text-sm">View and export time reports</p>
+        </a>
+
+        {/* Time Off Card */}
+        <a href="/time-off" className="p-4 md:p-6 border rounded-lg shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-2 bg-orange-100 rounded-lg">
+              <svg className="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <h2 className="text-lg font-semibold">Time Off</h2>
+          </div>
+          <p className="text-muted-foreground text-sm">Request and manage time off</p>
+        </a>
+
+        {/* Admin: Team Management */}
         {isManager() && (
-          <>
-            <div className="p-4 md:p-6 border rounded-lg shadow-sm border-yellow-200">
-              <h2 className="text-lg md:text-xl font-semibold mb-3 md:mb-4 text-yellow-600">Team Management</h2>
-              <p className="text-muted-foreground mb-3 md:mb-4 text-sm">
-                Manage your team members and their access
-              </p>
-              <button className="px-3 md:px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-sm inline-block">
-                View Team Members
-              </button>
+          <a href="/team" className="p-4 md:p-6 border rounded-lg shadow-sm hover:shadow-md transition-shadow border-yellow-200">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="p-2 bg-yellow-100 rounded-lg">
+                <svg className="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+              </div>
+              <h2 className="text-lg font-semibold">Team</h2>
             </div>
-
-            <div className="p-4 md:p-6 border rounded-lg shadow-sm border-yellow-200">
-              <h2 className="text-lg md:text-xl font-semibold mb-3 md:mb-4 text-yellow-600">Team Projects</h2>
-              <p className="text-muted-foreground mb-3 md:mb-4 text-sm">
-                View and manage team projects
-              </p>
-              <button className="px-3 md:px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-sm inline-block">
-                View Projects
-              </button>
-            </div>
-          </>
+            <p className="text-muted-foreground text-sm">Manage team members</p>
+          </a>
         )}
 
-        {/* Projects section - All users can access their team's projects */}
-        <div className="p-4 md:p-6 border rounded-lg shadow-sm">
-          <h2 className="text-lg md:text-xl font-semibold mb-3 md:mb-4">Projects</h2>
-          <p className="text-muted-foreground mb-3 md:mb-4 text-sm">
-            View projects assigned to your team
-          </p>
-          <button className="px-3 md:px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm inline-block">
-            View Projects
-          </button>
-        </div>
+        {/* Admin: Approvals */}
+        {isAdmin() && (
+          <a href="/approvals" className="p-4 md:p-6 border rounded-lg shadow-sm hover:shadow-md transition-shadow border-red-200">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="p-2 bg-red-100 rounded-lg">
+                <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h2 className="text-lg font-semibold">Approvals</h2>
+            </div>
+            <p className="text-muted-foreground text-sm">Review pending approvals</p>
+          </a>
+        )}
 
-        {/* Reports section - All users can access reports */}
-        <div className="p-4 md:p-6 border rounded-lg shadow-sm">
-          <h2 className="text-lg md:text-xl font-semibold mb-3 md:mb-4">Reports</h2>
-          <p className="text-muted-foreground mb-3 md:mb-4 text-sm">
-            View and export time tracking reports
-          </p>
-          <button className="px-3 md:px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm inline-block">
-            View Reports
-          </button>
-        </div>
+        {/* Admin: Settings */}
+        {isAdmin() && (
+          <a href="/settings" className="p-4 md:p-6 border rounded-lg shadow-sm hover:shadow-md transition-shadow border-gray-200">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="p-2 bg-gray-100 rounded-lg">
+                <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              </div>
+              <h2 className="text-lg font-semibold">Settings</h2>
+            </div>
+            <p className="text-muted-foreground text-sm">System configuration</p>
+          </a>
+        )}
       </div>
     </main>
   );
