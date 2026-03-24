@@ -180,7 +180,7 @@ export default function Timer() {
       // Refresh today's entries
       const today = new Date().toISOString().split('T')[0];
       const entriesRes = await api.get(`/time-entries?startDate=${today}&endDate=${today}`);
-      const entries = entriesRes.data.entries || [];
+      const entries = entriesRes.data.timeEntries || [];
       setTodayEntries(entries);
       const total = entries.reduce((sum: number, e: TimeEntry) => sum + (e.duration || 0), 0);
       setTodayTotal(total);
