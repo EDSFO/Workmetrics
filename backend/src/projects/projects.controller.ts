@@ -1,10 +1,11 @@
-import { Controller, Get, Post, Put, Delete, UseGuards, Request, Param, Body, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, UseGuards, Request, Param, Body, HttpCode, HttpStatus, ForbiddenException } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/roles/roles.decorator';
 import { Role } from '../auth/roles/role.enum';
 import { PrismaClient } from '@prisma/client';
+import { TenantService } from '../tenant/tenant.service';
 
 const prisma = new PrismaClient();
 
@@ -13,16 +14,20 @@ const prisma = new PrismaClient();
 @UseGuards(JwtAuthGuard, RolesGuard)
 @ApiBearerAuth()
 export class ProjectsController {
+  constructor(private readonly tenantService: TenantService) {}
   @Get()
   @Roles(Role.ADMIN, Role.MANAGER, Role.USER)
   @ApiOperation({ summary: 'List all projects (own team for Manager/User, all for Admin)' })
   async findAll(@Request() req: any) {
-    // Admin can see all projects
-    if (req.user.role === Role.ADMIN) {
-      const projects = await prisma.project.findMany({
-        include: { team: true },
-      });
-      return { projects };
+    // Admin can see all projects in their tenant
+    if (req.user.role === Role.ADMIN || req.user.role === 'OWNER') {
+      if (req.user.tenantId) {
+        const projects = await prisma.project.findMany({
+          where: { tenantId: req.user.tenantId },
+          include: { team: true },
+        });
+        return { projects };
+      }
     }
 
     // Manager and User see only their team's projects
@@ -98,6 +103,19 @@ export class ProjectsController {
       return { error: 'Team not found' };
     }
 
+    // Check plan limits for projects
+    if (req.user.tenantId) {
+      const limits = await this.tenantService.checkLimits(req.user.tenantId, 'projects');
+      if (!limits.canAdd) {
+        return {
+          error: `You have reached the maximum number of projects (${limits.max}) for your plan. Upgrade to create more projects.`,
+          upgradeRequired: true,
+          current: limits.current,
+          max: limits.max,
+        };
+      }
+    }
+
     // Managers can only create projects for their team
     if (req.user.role === Role.MANAGER && req.user.teamId !== teamId) {
       return { error: 'You can only create projects for your own team' };
@@ -107,6 +125,7 @@ export class ProjectsController {
       data: {
         name: createDto.name,
         description: createDto.description || null,
+        tenantId: team.tenantId,
         teamId,
         budgetHours: createDto.budgetHours ? String(createDto.budgetHours) : null,
         budgetAmount: createDto.budgetAmount ? String(createDto.budgetAmount) : null,

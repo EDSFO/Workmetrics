@@ -7,6 +7,7 @@ import { Roles } from '../auth/roles/roles.decorator';
 import { Role } from '../auth/roles/role.enum';
 import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import { TenantService } from '../tenant/tenant.service';
 
 const prisma = new PrismaClient();
 
@@ -15,7 +16,10 @@ const prisma = new PrismaClient();
 @UseGuards(JwtAuthGuard, RolesGuard)
 @ApiBearerAuth()
 export class TeamsController {
-  constructor(private usersService: UsersService) {}
+  constructor(
+    private usersService: UsersService,
+    private tenantService: TenantService,
+  ) {}
 
   @Get('members')
   @Roles(Role.ADMIN, Role.MANAGER)
@@ -104,8 +108,8 @@ export class TeamsController {
 
     // Determine team ID
     let teamId = req.user.teamId;
-    if (req.user.role === Role.ADMIN) {
-      // Admin needs to be part of a team to invite
+    if (req.user.role === Role.ADMIN || req.user.role === 'OWNER') {
+      // Admin/Owner needs to be part of a team to invite
       if (!teamId) {
         return { error: 'You must be part of a team to invite members' };
       }
@@ -114,6 +118,19 @@ export class TeamsController {
     // Managers can only invite to their team
     if (req.user.role === Role.MANAGER && !teamId) {
       return { error: 'You must be part of a team to invite members' };
+    }
+
+    // Check plan limits for users
+    if (req.user.tenantId) {
+      const limits = await this.tenantService.checkLimits(req.user.tenantId, 'users');
+      if (!limits.canAdd) {
+        return {
+          error: `You have reached the maximum number of users (${limits.max}) for your plan. Upgrade to invite more members.`,
+          upgradeRequired: true,
+          current: limits.current,
+          max: limits.max,
+        };
+      }
     }
 
     // Generate invitation token
