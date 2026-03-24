@@ -162,8 +162,8 @@ export default function CalendarPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Calendar</h1>
-          <p className="text-muted-foreground">Visualize your time entries</p>
+          <h1 className="text-2xl font-bold text-foreground">Calendário</h1>
+          <p className="text-muted-foreground">Visualize suas entradas de tempo</p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -171,7 +171,7 @@ export default function CalendarPage() {
             onClick={goToToday}
             className="px-3 py-2 text-sm font-medium rounded-lg bg-muted hover:bg-muted/80 transition-colors"
           >
-            Today
+            Hoje
           </button>
         </div>
       </div>
@@ -213,7 +213,7 @@ export default function CalendarPage() {
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              {v === 'day' ? 'Day' : v === 'week' ? 'Week' : 'Month'}
+              {v === 'day' ? 'Dia' : v === 'week' ? 'Semana' : 'Mês'}
             </button>
           ))}
         </div>
@@ -239,15 +239,15 @@ export default function CalendarPage() {
           {/* Summary Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-card rounded-lg p-4 border">
-              <p className="text-sm text-muted-foreground">Total Hours</p>
+              <p className="text-sm text-muted-foreground">Total de Horas</p>
               <p className="text-2xl font-bold">{formatDuration(calendarData.totalDuration)}</p>
             </div>
             <div className="bg-card rounded-lg p-4 border">
-              <p className="text-sm text-muted-foreground">Billable Hours</p>
+              <p className="text-sm text-muted-foreground">Horas Faturáveis</p>
               <p className="text-2xl font-bold text-green-600">{formatDuration(calendarData.totalBillable)}</p>
             </div>
             <div className="bg-card rounded-lg p-4 border">
-              <p className="text-sm text-muted-foreground">Entries</p>
+              <p className="text-sm text-muted-foreground">Registros</p>
               <p className="text-2xl font-bold">
                 {calendarData.days.reduce((sum, day) => sum + day.entries.length, 0)}
               </p>
@@ -258,7 +258,7 @@ export default function CalendarPage() {
           <div className="bg-card rounded-lg border overflow-hidden">
             {view === 'month' && (
               <div className="grid grid-cols-7 border-b">
-                {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
+                {['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'].map((day) => (
                   <div key={day} className="p-3 text-center text-sm font-medium bg-muted border-r last:border-r-0">
                     {day}
                   </div>
@@ -289,14 +289,14 @@ export default function CalendarPage() {
                           <div
                             key={entry.id}
                             className={`text-xs p-1 rounded truncate ${getProjectColor(entry.projectName)} text-white`}
-                            title={`${entry.projectName || 'No project'}: ${formatDuration(entry.duration)}`}
+                            title={`${entry.projectName || 'Sem projeto'}: ${formatDuration(entry.duration)}`}
                           >
-                            {formatTime(entry.startTime)} {entry.projectName || 'No project'}
+                            {formatTime(entry.startTime)} {entry.projectName || 'Sem projeto'}
                           </div>
                         ))}
                         {day.entries.length > 3 && (
                           <div className="text-xs text-muted-foreground">
-                            +{day.entries.length - 3} more
+                            +{day.entries.length - 3} mais
                           </div>
                         )}
                       </div>
@@ -313,7 +313,7 @@ export default function CalendarPage() {
                       </div>
                       <div className="flex-1 space-y-2">
                         {day.entries.length === 0 ? (
-                          <p className="text-sm text-muted-foreground italic">No entries</p>
+                          <p className="text-sm text-muted-foreground italic">Sem registros</p>
                         ) : (
                           day.entries.map((entry) => (
                             <div
@@ -324,10 +324,10 @@ export default function CalendarPage() {
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center justify-between gap-2">
                                   <p className="font-medium text-sm truncate">
-                                    {entry.projectName || 'No project'}
+                                    {entry.projectName || 'Sem projeto'}
                                   </p>
                                   <span className="text-xs text-muted-foreground">
-                                    {entry.duration ? formatDuration(entry.duration) : 'In progress'}
+                                    {entry.duration ? formatDuration(entry.duration) : 'Em andamento'}
                                   </span>
                                 </div>
                                 {entry.taskName && (
@@ -342,7 +342,7 @@ export default function CalendarPage() {
                                   </span>
                                   {entry.billable && (
                                     <span className="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded">
-                                      Billable
+                                      Faturável
                                     </span>
                                   )}
                                 </div>
