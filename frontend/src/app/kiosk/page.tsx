@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { api } from '@/lib/auth-context';
-import { useRouter } from 'next/navigation';
 
 // Types
 interface KioskEntry {
@@ -14,16 +13,35 @@ interface KioskEntry {
   description?: string;
 }
 
+// Format date for display
+function formatDateDisplay(date: Date): string {
+  return date.toLocaleDateString('pt-BR', {
+    weekday: 'long',
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+  });
+}
+
+// Format seconds to short display
+function formatShortDuration(seconds: number): string {
+  const hrs = Math.floor(seconds / 3600);
+  const mins = Math.floor((seconds % 3600) / 60);
+  if (hrs > 0) return `${hrs}h ${mins}m`;
+  return `${mins}m`;
+}
+
 export default function KioskPage() {
-  const router = useRouter();
   const [status, setStatus] = useState<string>('OFF');
   const [entries, setEntries] = useState<KioskEntry[]>([]);
   const [totalWorkTime, setTotalWorkTime] = useState<number>(0);
+  const [pauseTime, setPauseTime] = useState<number>(0);
   const [currentEntry, setCurrentEntry] = useState<KioskEntry | null>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [currentTime, setCurrentTime] = useState<string>('');
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Format seconds to HH:MM:SS
@@ -47,6 +65,20 @@ export default function KioskPage() {
     return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
   }
 
+  // Update current time
+  useEffect(() => {
+    const updateTime = () => {
+      setCurrentTime(new Date().toLocaleTimeString('pt-BR', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      }));
+    };
+    updateTime();
+    const timer = setInterval(updateTime, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
   // Fetch kiosk status
   const fetchStatus = useCallback(async () => {
     try {
@@ -67,15 +99,25 @@ export default function KioskPage() {
       const response = await api.get('/time-entries/kiosk/today');
       setEntries(response.data.entries || []);
       setTotalWorkTime(response.data.totalWorkTime || 0);
+      setPauseTime(response.data.pauseTime || 0);
     } catch (err) {
       console.error('Failed to fetch entries:', err);
     }
   }, []);
 
-  // Initial fetch
+  // Initial fetch + visibility change refresh
   useEffect(() => {
     fetchStatus();
     fetchTodayEntries();
+
+    const handleVisibility = () => {
+      if (!document.hidden) {
+        fetchStatus();
+        fetchTodayEntries();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
   }, [fetchStatus, fetchTodayEntries]);
 
   // Update elapsed time
@@ -201,12 +243,39 @@ export default function KioskPage() {
     }
   };
 
+  // Get current session type label
+  const getSessionType = () => {
+    const clockIn = entries.find(e => e.type === 'CLOCK_IN');
+    if (!clockIn) return null;
+    const clockOut = entries.find(e => e.type === 'CLOCK_OUT');
+    if (!clockOut) return '🟢 Em andamento';
+    return '✅ Completo';
+  };
+
   return (
     <div className="p-6">
       <div className="max-w-2xl mx-auto">
-        <div className="text-center mb-8">
+        {/* Header with Date */}
+        <div className="text-center mb-6">
           <h1 className="text-3xl font-bold mb-2">Ponto Eletrônico</h1>
-          <p className="text-muted-foreground">Registro de entrada e saída</p>
+          <p className="text-muted-foreground capitalize">{formatDateDisplay(new Date())}</p>
+          <p className="text-2xl font-mono text-blue-600 mt-2">{currentTime}</p>
+        </div>
+
+        {/* Quick Summary Cards */}
+        <div className="grid grid-cols-3 gap-3 mb-6">
+          <div className="bg-white border rounded-lg p-4 text-center">
+            <p className="text-sm text-muted-foreground mb-1">Tempo Trabalho</p>
+            <p className="text-xl font-bold text-green-600">{formatShortDuration(totalWorkTime)}</p>
+          </div>
+          <div className="bg-white border rounded-lg p-4 text-center">
+            <p className="text-sm text-muted-foreground mb-1">Em Pausa</p>
+            <p className="text-xl font-bold text-yellow-600">{formatShortDuration(pauseTime)}</p>
+          </div>
+          <div className="bg-white border rounded-lg p-4 text-center">
+            <p className="text-sm text-muted-foreground mb-1">Registros</p>
+            <p className="text-xl font-bold text-blue-600">{entries.length}</p>
+          </div>
         </div>
 
         {/* Status Indicator */}
@@ -215,6 +284,9 @@ export default function KioskPage() {
             {status === 'OFF' ? '--:--:--' : formatDuration(elapsedSeconds)}
           </div>
           <div className="text-xl font-semibold">{getStatusText()}</div>
+          {getSessionType() && (
+            <div className="text-sm mt-1 opacity-80">{getSessionType()}</div>
+          )}
         </div>
 
         {/* Messages */}
@@ -275,11 +347,7 @@ export default function KioskPage() {
 
         {/* Today's Summary */}
         <div className="bg-white border rounded-lg p-4">
-          <h3 className="font-semibold mb-4">Resumo de Hoje</h3>
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-muted-foreground">Tempo Total:</span>
-            <span className="text-2xl font-bold">{formatDuration(totalWorkTime)}</span>
-          </div>
+          <h3 className="font-semibold mb-4">Registro do Dia</h3>
 
           {/* Entries List */}
           <div className="space-y-2">
@@ -288,8 +356,16 @@ export default function KioskPage() {
                 Nenhum registro hoje
               </p>
             ) : (
-              entries.map((entry) => (
-                <div key={entry.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+              entries.map((entry, index) => (
+                <div
+                  key={entry.id}
+                  className={`flex items-center justify-between p-3 rounded-lg ${
+                    entry.type === 'CLOCK_IN' ? 'bg-green-50 border border-green-200' :
+                    entry.type === 'CLOCK_OUT' ? 'bg-red-50 border border-red-200' :
+                    entry.type === 'PAUSE' ? 'bg-yellow-50 border border-yellow-200' :
+                    'bg-blue-50 border border-blue-200'
+                  }`}
+                >
                   <div className="flex items-center gap-3">
                     <span className="text-2xl">
                       {entry.type === 'CLOCK_IN' && '🕐'}
@@ -306,12 +382,12 @@ export default function KioskPage() {
                       </div>
                       <div className="text-sm text-muted-foreground">
                         {formatTime(entry.startTime)}
-                        {entry.endTime && ` - ${formatTime(entry.endTime)}`}
+                        {entry.endTime && ` → ${formatTime(entry.endTime)}`}
                       </div>
                     </div>
                   </div>
                   {entry.duration && entry.type !== 'RESUME' && (
-                    <span className="text-sm font-medium text-muted-foreground">
+                    <span className="text-sm font-semibold px-2 py-1 bg-white rounded">
                       {formatDuration(entry.duration)}
                     </span>
                   )}
@@ -319,6 +395,14 @@ export default function KioskPage() {
               ))
             )}
           </div>
+
+          {/* Total Work Time */}
+          {totalWorkTime > 0 && (
+            <div className="mt-4 pt-4 border-t flex justify-between items-center">
+              <span className="font-medium">Tempo Total de Trabalho:</span>
+              <span className="text-xl font-bold text-green-600">{formatDuration(totalWorkTime)}</span>
+            </div>
+          )}
         </div>
       </div>
     </div>
