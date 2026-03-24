@@ -17,6 +17,7 @@ import { IntegrationsModule } from './integrations/integrations.module';
 import { SsoModule } from './sso/sso.module';
 import { GdprModule } from './gdpr/gdpr.module';
 import { AuditModule } from './audit/audit.module';
+import { StandardTasksModule } from './standard-tasks/standard-tasks.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { AuditModule } from './audit/audit.module';
     SsoModule,
     GdprModule,
     AuditModule,
+    StandardTasksModule,
   ],
 })
 export class AppModule {}

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { api, useAuthStore } from '@/lib/auth-context';
 import Link from 'next/link';
+import StandardTasks from '@/components/StandardTasks';
 
 // Types
 interface TeamMember {
@@ -58,6 +59,7 @@ export default function TeamPage() {
   const [showTeamForm, setShowTeamForm] = useState<boolean>(false);
   const [teamName, setTeamName] = useState<string>('');
   const [isCreatingTeam, setIsCreatingTeam] = useState<boolean>(false);
+  const [activeTab, setActiveTab] = useState<'members' | 'standard-tasks'>('members');
 
   // Check if user can manage team
   const canManageTeam = isAdmin() || isManager();
@@ -299,6 +301,37 @@ export default function TeamPage() {
         </div>
       )}
 
+      {/* Tabs */}
+      {isAdmin() && (
+        <div className="flex gap-4 mb-6 border-b">
+          <button
+            onClick={() => setActiveTab('members')}
+            className={`pb-2 px-1 font-medium transition-colors ${
+              activeTab === 'members'
+                ? 'border-b-2 border-blue-500 text-blue-600'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Membros
+          </button>
+          <button
+            onClick={() => setActiveTab('standard-tasks')}
+            className={`pb-2 px-1 font-medium transition-colors ${
+              activeTab === 'standard-tasks'
+                ? 'border-b-2 border-blue-500 text-blue-600'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Tarefas Padrão
+          </button>
+        </div>
+      )}
+
+      {/* Tab Content */}
+      {activeTab === 'standard-tasks' ? (
+        <StandardTasks />
+      ) : (
+      <>
       {/* Create Team Form */}
       {showTeamForm && isAdmin() && (
         <div className="mb-8 p-6 border rounded-lg shadow-sm bg-white">
@@ -504,6 +537,8 @@ export default function TeamPage() {
           </div>
         )}
       </div>
+      </>
+      )}
     </main>
   );
 }
