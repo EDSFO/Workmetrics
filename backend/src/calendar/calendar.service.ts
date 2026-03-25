@@ -254,7 +254,7 @@ export class CalendarService {
     const entry = await prisma.timeEntry.findUnique({
       where: { id: entryId },
       include: {
-        user: { select: { id: true, name: true } },
+        user: { select: { id: true, name: true, teamId: true } },
         project: { select: { id: true, name: true } },
         task: { select: { id: true, name: true } },
       },

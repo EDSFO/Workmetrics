@@ -48,6 +48,7 @@ export type AuditEventType = typeof AUDIT_EVENT_TYPES[keyof typeof AUDIT_EVENT_T
 
 export interface CreateAuditLogParams {
   userId?: string;
+  tenantId?: string;
   action: string;
   resource: string;
   resourceId?: string;
@@ -69,9 +70,20 @@ export class AuditService {
    */
   async log(params: CreateAuditLogParams): Promise<void> {
     try {
+      // Get tenantId from user if not provided
+      let tenantId = params.tenantId || '';
+      if (!tenantId && params.userId) {
+        const user = await prisma.user.findUnique({
+          where: { id: params.userId },
+          select: { tenantId: true },
+        });
+        tenantId = user?.tenantId || '';
+      }
+
       await prisma.auditLog.create({
         data: {
-          userId: params.userId,
+          userId: params.userId || 'system',
+          tenantId,
           action: params.action,
           resource: params.resource,
           resourceId: params.resourceId,
@@ -211,11 +223,7 @@ export class AuditService {
         orderBy: { createdAt: 'desc' },
         take: params.limit || 100,
         skip: params.offset || 0,
-        include: {
-          user: {
-            select: { id: true, name: true, email: true, role: true },
-          },
-        },
+        // Note: user relation removed from AuditLog model
       }),
       prisma.auditLog.count({ where }),
     ]);
@@ -235,11 +243,7 @@ export class AuditService {
       where: { resource, resourceId },
       orderBy: { createdAt: 'desc' },
       take: limit,
-      include: {
-        user: {
-          select: { id: true, name: true, email: true },
-        },
-      },
+      // Note: user relation removed from AuditLog model
     });
   }
 
@@ -274,11 +278,7 @@ export class AuditService {
       },
       orderBy: { createdAt: 'desc' },
       take: limit,
-      include: {
-        user: {
-          select: { id: true, name: true, email: true },
-        },
-      },
+      // Note: user relation removed from AuditLog model
     });
   }
 
@@ -314,7 +314,7 @@ export class AuditService {
           resource: true,
           createdAt: true,
           status: true,
-          user: { select: { name: true } },
+          // Note: user relation removed from AuditLog model
         },
       }),
     ]);

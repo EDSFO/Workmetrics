@@ -46,12 +46,26 @@ export class SsoService {
 
       const provider = await prisma.ssoProvider.create({
         data: {
+          tenantId: teamId, // Use teamId as tenantId for now
           teamId,
           type,
           name,
           config,
           defaultRole,
           enabled: true,
+          // SAML specific
+          entityId: config.entityId || null,
+          ssoUrl: config.ssoUrl || null,
+          certificate: config.certificate || null,
+          // OIDC specific
+          issuerUrl: config.issuer || null,
+          clientId: config.clientId || null,
+          clientSecret: config.clientSecret || null,
+          // LDAP specific
+          server: config.server || null,
+          bindDn: config.bindDn || null,
+          searchBase: config.searchBase || null,
+          domain: config.domain || null,
         },
       });
 
@@ -224,10 +238,10 @@ export class SsoService {
       }
 
       const state = crypto.randomBytes(16).toString('hex');
-      const config = provider.config;
+      const config = provider.config || {};
 
-      const authUrl = new URL(`${config.issuer}/authorize`);
-      authUrl.searchParams.set('client_id', config.clientId);
+      const authUrl = new URL(`${provider.issuerUrl}/authorize`);
+      authUrl.searchParams.set('client_id', provider.clientId || '');
       authUrl.searchParams.set('redirect_uri', redirectUri);
       authUrl.searchParams.set('response_type', 'code');
       authUrl.searchParams.set('scope', 'openid profile email');
@@ -261,16 +275,16 @@ export class SsoService {
         return { success: false, error: 'OIDC provider not found' };
       }
 
-      const config = provider.config;
+      const config = provider.config || {};
 
       // Exchange code for tokens
-      const tokenResponse = await fetch(`${config.issuer}/token`, {
+      const tokenResponse = await fetch(`${provider.issuerUrl}/token`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({
           grant_type: 'authorization_code',
-          client_id: config.clientId,
-          client_secret: config.clientSecret,
+          client_id: provider.clientId || '',
+          client_secret: provider.clientSecret || '',
           code,
           redirect_uri: redirectUri,
         }),
@@ -283,7 +297,7 @@ export class SsoService {
       const tokens = await tokenResponse.json();
 
       // Get user info
-      const userInfoResponse = await fetch(`${config.issuer}/userinfo`, {
+      const userInfoResponse = await fetch(`${provider.issuerUrl}/userinfo`, {
         headers: { Authorization: `Bearer ${tokens.access_token}` },
       });
 

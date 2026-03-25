@@ -19,7 +19,7 @@ export class ApiKeyGuard implements CanActivate {
     // Find the API key (we store prefix + hash, so we need to find by prefix first)
     const potentialKeys = await prisma.apiKey.findMany({
       where: {
-        active: true,
+        isActive: true,
         OR: [
           { expiresAt: null },
           { expiresAt: { gt: new Date() } },
@@ -37,10 +37,10 @@ export class ApiKeyGuard implements CanActivate {
           data: { lastUsedAt: new Date() },
         });
 
-        // Attach team info to request
+        // Attach tenant info to request
         request.apiKey = {
           id: keyRecord.id,
-          teamId: keyRecord.teamId,
+          tenantId: keyRecord.tenantId,
           permissions: keyRecord.permissions,
         };
         return true;
@@ -63,7 +63,7 @@ export class ApiKeyService {
    * AIDEV-NOTE: Generate a new API key
    */
   async createApiKey(
-    teamId: string,
+    tenantId: string,
     name: string,
     permissions: string[] = [],
     expiresInDays?: number,
@@ -74,15 +74,15 @@ export class ApiKeyService {
 
     const keyRecord = await prisma.apiKey.create({
       data: {
-        teamId,
+        tenantId,
         name,
         key: keyHash,
-        keyPrefix,
+        prefix: keyPrefix,
         permissions,
         expiresAt: expiresInDays
           ? new Date(Date.now() + expiresInDays * 24 * 60 * 60 * 1000)
           : null,
-        active: true,
+        isActive: true,
       },
     });
 
@@ -96,7 +96,7 @@ export class ApiKeyService {
     try {
       await prisma.apiKey.update({
         where: { id: keyId },
-        data: { active: false },
+        data: { isActive: false },
       });
       return true;
     } catch {
@@ -105,15 +105,15 @@ export class ApiKeyService {
   }
 
   /**
-   * AIDEV-NOTE: List API keys for a team
+   * AIDEV-NOTE: List API keys for a tenant
    */
-  async listApiKeys(teamId: string): Promise<any[]> {
+  async listApiKeys(tenantId: string): Promise<any[]> {
     const keys = await prisma.apiKey.findMany({
-      where: { teamId, active: true },
+      where: { tenantId, isActive: true },
       select: {
         id: true,
         name: true,
-        keyPrefix: true,
+        prefix: true,
         permissions: true,
         expiresAt: true,
         lastUsedAt: true,

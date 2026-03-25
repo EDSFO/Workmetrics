@@ -12,40 +12,46 @@ datasource db {
 // ============================================
 
 model Tenant {
-  id                String   @id @default(uuid())
-  name              String
-  slug              String   @unique // For custom URLs
-  logo              String?
-  primaryColor      String   @default("#3B82F6")
-  customDomain      String?
-  timezone          String   @default("America/Sao_Paulo")
-  planId            String   @map("plan_id")
-  stripeCustomerId  String?  @map("stripe_customer_id")
-  stripeSubscriptionId String? @map("stripe_subscription_id")
-  status            String   @default("ACTIVE") // ACTIVE, SUSPENDED, CANCELED
-  createdAt         DateTime @default(now()) @map("created_at")
-  updatedAt         DateTime @updatedAt @map("updated_at")
+  id                   String   @id @default(uuid())
+  name                 String
+  slug                 String   @unique // For custom URLs
+  logo                 String?
+  primaryColor         String   @default("#3B82F6")
+  customDomain         String?
+  timezone             String   @default("America/Sao_Paulo")
+  planId               String   @map("plan_id")
+  stripeCustomerId     String?  @map("stripe_customer_id")
+  stripeSubscriptionId String?  @map("stripe_subscription_id")
+  status               String   @default("ACTIVE") // ACTIVE, SUSPENDED, CANCELED
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
 
-  plan              Plan     @relation(fields: [planId], references: [id])
-  teams             Team[]
-  projects          Project[]
-  timeEntries       TimeEntry[]
-  invitations       TenantInvitation[]
+  plan        Plan               @relation(fields: [planId], references: [id])
+  teams       Team[]
+  projects    Project[]
+  timeEntries TimeEntry[]
+  invitations TenantInvitation[]
+  apiKeys     ApiKey[]
+  webhooks    Webhook[]
+  timeOffs        TimeOff[]
+  timeOffPolicies TimeOffPolicy[]
+  ssoProviders    SsoProvider[]
+  User            User[]
 
   @@map("Tenant")
 }
 
 model Plan {
-  id           String   @id @default(uuid())
-  name         String   // Free, Starter, Pro, Enterprise
-  monthlyPrice Decimal  @map("monthly_price") @db.Decimal(10, 2)
-  maxUsers     Int      @default(-1) // -1 = unlimited
-  maxProjects  Int      @default(-1)
-  features     Json     @default("{}") // Feature flags
-  isActive     Boolean  @default(true)
-  sortOrder    Int      @default(0)
+  id           String  @id @default(uuid())
+  name         String // Free, Starter, Pro, Enterprise
+  monthlyPrice Decimal @map("monthly_price") @db.Decimal(10, 2)
+  maxUsers     Int     @default(-1) // -1 = unlimited
+  maxProjects  Int     @default(-1)
+  features     Json    @default("{}") // Feature flags
+  isActive     Boolean @default(true)
+  sortOrder    Int     @default(0)
 
-  tenants      Tenant[]
+  tenants Tenant[]
 
   @@map("Plan")
 }
@@ -70,20 +76,23 @@ model TenantInvitation {
 // ============================================
 
 model User {
-  id           String    @id @default(uuid())
-  email        String    @unique
-  passwordHash String    @map("password_hash")
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
   name         String
-  role         String    @default("USER") // OWNER, ADMIN, MANAGER, USER
-  teamId       String?   @map("team_id")
-  hourlyRate   Decimal?  @map("hourly_rate") @db.Decimal(10, 2)
-  createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime  @updatedAt @map("updated_at")
+  role         String   @default("USER") // OWNER, ADMIN, MANAGER, USER
+  teamId       String?  @map("team_id")
+  tenantId     String?  @map("tenant_id")
+  hourlyRate   Decimal? @map("hourly_rate") @db.Decimal(10, 2)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
 
-  team          Team?        @relation(fields: [teamId], references: [id])
-  timeEntries   TimeEntry[]
-  teamOwner     Team?        @relation("TeamOwner")
-  invoices      Invoice[]
+  team        Team?       @relation(fields: [teamId], references: [id])
+  tenant      Tenant?     @relation(fields: [tenantId], references: [id])
+  timeEntries TimeEntry[]
+  teamOwner   Team?       @relation("TeamOwner")
+  invoices    Invoice[]
+  TimeOff     TimeOff[]
 
   @@map("User")
 }
@@ -91,52 +100,52 @@ model User {
 model Team {
   id        String   @id @default(uuid())
   name      String
-  tenantId  String   @map("tenant_id")
+  tenantId  String?  @map("tenant_id")
   ownerId   String   @unique @map("owner_id")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  tenant    Tenant   @relation(fields: [tenantId], references: [id])
-  owner     User     @relation("TeamOwner", fields: [ownerId], references: [id])
-  users     User[]
-  projects  Project[]
+  tenant      Tenant?          @relation(fields: [tenantId], references: [id])
+  owner       User             @relation("TeamOwner", fields: [ownerId], references: [id])
+  users       User[]
+  projects    Project[]
   invitations TeamInvitation[]
 
-  @@map("Team")
   @@index([tenantId])
+  @@map("Team")
 }
 
 model Project {
-  id           String    @id @default(uuid())
+  id           String   @id @default(uuid())
   name         String
-  description  String?   @db.Text
-  tenantId     String    @map("tenant_id")
-  teamId       String    @map("team_id")
-  budgetHours  Decimal?  @map("budget_hours") @db.Decimal(10, 2)
-  budgetAmount Decimal?  @map("budget_amount") @db.Decimal(12, 2)
-  archived     Boolean   @default(false)
-  createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime  @updatedAt @map("updated_at")
+  description  String?  @db.Text
+  tenantId     String   @map("tenant_id")
+  teamId       String   @map("team_id")
+  budgetHours  Decimal? @map("budget_hours") @db.Decimal(10, 2)
+  budgetAmount Decimal? @map("budget_amount") @db.Decimal(12, 2)
+  archived     Boolean  @default(false)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
 
-  tenant      Tenant     @relation(fields: [tenantId], references: [id])
+  tenant      Tenant      @relation(fields: [tenantId], references: [id])
   team        Team        @relation(fields: [teamId], references: [id])
   tasks       Task[]
   timeEntries TimeEntry[]
 
-  @@map("Project")
   @@index([tenantId])
+  @@map("Project")
 }
 
 model Task {
-  id             String    @id @default(uuid())
-  projectId      String    @map("project_id")
+  id             String   @id @default(uuid())
+  projectId      String   @map("project_id")
   name           String
-  estimatedHours Decimal?  @map("estimated_hours") @db.Decimal(10, 2)
-  createdAt      DateTime  @default(now()) @map("created_at")
-  updatedAt      DateTime  @updatedAt @map("updated_at")
+  estimatedHours Decimal? @map("estimated_hours") @db.Decimal(10, 2)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
 
-  project      Project      @relation(fields: [projectId], references: [id])
-  timeEntries  TimeEntry[]
+  project     Project     @relation(fields: [projectId], references: [id])
+  timeEntries TimeEntry[]
 
   @@map("Task")
 }
@@ -144,12 +153,12 @@ model Task {
 model TimeEntry {
   id          String    @id @default(uuid())
   userId      String    @map("user_id")
-  tenantId    String    @map("tenant_id")
+  tenantId    String?   @map("tenant_id")
   projectId   String?   @map("project_id")
   taskId      String?   @map("task_id")
   startTime   DateTime  @map("start_time")
   endTime     DateTime? @map("end_time")
-  duration    Int?      // Duration in seconds
+  duration    Int? // Duration in seconds
   type        String    @default("TIME") // TIME, CLOCK_IN, CLOCK_OUT, PAUSE, RESUME, AUTO
   status      String    @default("PENDING") // PENDING, APPROVED, REJECTED
   description String?   @db.Text
@@ -158,7 +167,7 @@ model TimeEntry {
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
   user    User     @relation(fields: [userId], references: [id])
-  tenant  Tenant   @relation(fields: [tenantId], references: [id])
+  tenant  Tenant?  @relation(fields: [tenantId], references: [id])
   project Project? @relation(fields: [projectId], references: [id])
   task    Task?    @relation(fields: [taskId], references: [id])
 
@@ -189,8 +198,8 @@ model Invoice {
   userId      String    @map("user_id")
   clientName  String    @map("client_name")
   clientEmail String?   @map("client_email")
-  periodStart DateTime @map("period_start")
-  periodEnd   DateTime @map("period_end")
+  periodStart DateTime  @map("period_start")
+  periodEnd   DateTime  @map("period_end")
   totalHours  Decimal   @map("total_hours") @db.Decimal(10, 2)
   hourlyRate  Decimal   @map("hourly_rate") @db.Decimal(10, 2)
   totalAmount Decimal   @map("total_amount") @db.Decimal(12, 2)
@@ -201,16 +210,16 @@ model Invoice {
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
-  user    User          @relation(fields: [userId], references: [id])
+  user    User           @relation(fields: [userId], references: [id])
   entries InvoiceEntry[]
 
   @@map("Invoice")
 }
 
 model InvoiceEntry {
-  id         String  @id @default(uuid())
-  invoiceId  String @map("invoice_id")
-  entryId    String @map("entry_id")
+  id        String @id @default(uuid())
+  invoiceId String @map("invoice_id")
+  entryId   String @map("entry_id")
 
   invoice Invoice @relation(fields: [invoiceId], references: [id])
 
@@ -219,15 +228,190 @@ model InvoiceEntry {
 }
 
 model StandardTask {
-  id             String    @id @default(uuid())
+  id             String   @id @default(uuid())
   name           String
-  description    String?   @db.Text
-  estimatedHours Decimal?  @map("estimated_hours") @db.Decimal(10, 2)
-  color          String    @default("#3B82F6")
-  icon           String    @default("📋")
-  isActive       Boolean   @default(true)
-  createdAt      DateTime  @default(now()) @map("created_at")
-  updatedAt      DateTime  @updatedAt @map("updated_at")
+  description    String?  @db.Text
+  estimatedHours Decimal? @map("estimated_hours") @db.Decimal(10, 2)
+  color          String   @default("#3B82F6")
+  icon           String   @default("📋")
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
 
   @@map("StandardTask")
+}
+
+// ============================================
+// API & Webhooks Models
+// ============================================
+
+model ApiKey {
+  id          String    @id @default(uuid())
+  userId      String?   @map("user_id")
+  tenantId    String?   @map("tenant_id")
+  name        String
+  key         String    @unique
+  prefix      String
+  isActive    Boolean   @default(true) @map("is_active")
+  permissions Json      @default("{}")
+  lastUsedAt  DateTime? @map("last_used_at")
+  expiresAt   DateTime? @map("expires_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  tenant Tenant? @relation(fields: [tenantId], references: [id])
+
+  @@index([userId])
+  @@map("ApiKey")
+}
+
+model Webhook {
+  id        String   @id @default(uuid())
+  tenantId  String   @map("tenant_id")
+  name      String
+  url       String
+  secret    String?
+  events    String[] // Event types to trigger on
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  tenant     Tenant            @relation(fields: [tenantId], references: [id])
+  deliveries WebhookDelivery[]
+
+  @@index([tenantId])
+  @@map("Webhook")
+}
+
+model WebhookDelivery {
+  id          String    @id @default(uuid())
+  webhookId   String    @map("webhook_id")
+  event       String
+  payload     Json
+  response    String?
+  status      String    @default("PENDING") // PENDING, SUCCESS, FAILED
+  statusCode  Int?      @map("status_code")
+  error       String?
+  attempts    Int       @default(0)
+  nextRetryAt DateTime? @map("next_retry_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  completedAt DateTime? @map("completed_at")
+
+  webhook Webhook @relation(fields: [webhookId], references: [id])
+
+  @@index([webhookId])
+  @@map("WebhookDelivery")
+}
+
+// ============================================
+// Audit & Time Off Models
+// ============================================
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  tenantId   String?  @map("tenant_id")
+  teamId     String?  @map("team_id")
+  userId     String   @map("user_id")
+  action     String
+  resource   String   @map("resource")
+  resourceId String?  @map("resource_id")
+  entityType String?  @map("entity_type")
+  entityId   String?  @map("entity_id")
+  details    Json?
+  status     String?
+  userAgent  String?  @map("user_agent")
+  metadata   Json?
+  ipAddress  String?  @map("ip_address")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId])
+  @@index([userId])
+  @@index([teamId])
+  @@map("AuditLog")
+}
+
+model TimeOff {
+  id              String    @id @default(uuid())
+  userId          String    @map("user_id")
+  tenantId        String?   @map("tenant_id")
+  type            String    // VACATION, SICK, PERSONAL, OTHER
+  startDate       DateTime  @map("start_date")
+  endDate         DateTime  @map("end_date")
+  hours           Decimal?  @map("hours") @db.Decimal(10, 2)
+  status          String    @default("PENDING") // PENDING, APPROVED, REJECTED
+  reason          String?
+  notes           String?   @db.Text
+  rejectionReason String?   @map("rejection_reason")
+  approvedBy      String?   @map("approved_by")
+  approvedAt      DateTime? @map("approved_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  tenant Tenant? @relation(fields: [tenantId], references: [id])
+  user   User    @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([tenantId])
+  @@map("TimeOff")
+}
+
+// ============================================
+// Additional Models
+// ============================================
+
+model TimeOffPolicy {
+  id          String   @id @default(uuid())
+  tenantId    String   @map("tenant_id")
+  teamId      String?  @map("team_id")
+  type        String   // VACATION, SICK, PERSONAL
+  name        String
+  days        Int      @default(0) // Days per year
+  maxBalance  Decimal? @map("max_balance") @db.Decimal(10, 2) // Max balance in hours
+  accrualRate Decimal? @map("accrual_rate") @db.Decimal(5, 2) // Hours accrued per period
+  isPaid      Boolean  @default(true) @map("is_paid") // Is paid time off
+  description String?
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  tenant Tenant? @relation(fields: [tenantId], references: [id])
+
+  @@map("TimeOffPolicy")
+  @@index([tenantId])
+  @@index([teamId])
+}
+
+model SsoProvider {
+  id           String   @id @default(uuid())
+  tenantId     String   @map("tenant_id")
+  teamId       String?  @map("team_id")
+  type         String   // GOOGLE, MICROSOFT, SAML, OAUTH, LDAP
+  name         String
+  clientId     String?  @map("client_id")
+  clientSecret String?  @map("client_secret")
+  issuerUrl    String?  @map("issuer_url")
+  metadataXml  String?  @map("metadata_xml")
+  config       Json?    // Additional provider-specific config
+  enabled      Boolean  @default(false)
+  defaultRole  String   @default("USER") // Default role for new SSO users
+  isActive     Boolean  @default(false) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // SAML specific
+  entityId     String?  @map("entity_id")
+  ssoUrl       String?  @map("sso_url")
+  certificate  String?
+
+  // LDAP specific
+  server       String?  // LDAP server URL
+  bindDn       String?  @map("bind_dn") // Bind DN
+  searchBase   String?  @map("search_base")
+  domain       String?
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@map("SsoProvider")
+  @@index([tenantId])
+  @@index([teamId])
 }

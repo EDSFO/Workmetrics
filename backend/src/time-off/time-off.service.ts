@@ -161,7 +161,7 @@ export class TimeOffService {
       where: { id: timeOffId },
       data: {
         status: 'APPROVED',
-        approverId,
+        approvedBy: approverId,
         approvedAt: new Date(),
       },
     });
@@ -193,7 +193,7 @@ export class TimeOffService {
       where: { id: timeOffId },
       data: {
         status: 'REJECTED',
-        approverId,
+        approvedBy: approverId,
         approvedAt: new Date(),
         rejectionReason: reason,
       },
@@ -243,7 +243,7 @@ export class TimeOffService {
     }
 
     const policies = await prisma.timeOffPolicy.findMany({
-      where: { teamId: user.teamId, active: true },
+      where: { teamId: user.teamId, isActive: true },
     });
 
     const balances: TimeOffBalance[] = [];
@@ -300,7 +300,7 @@ export class TimeOffService {
         accrualRate: dto.accrualRate,
         maxBalance: dto.maxBalance || null,
         isPaid: dto.isPaid ?? true,
-        active: true,
+        isActive: true,
       },
     });
   }
@@ -310,7 +310,7 @@ export class TimeOffService {
    */
   async getTeamPolicies(teamId: string): Promise<any[]> {
     return prisma.timeOffPolicy.findMany({
-      where: { teamId, active: true },
+      where: { teamId, isActive: true },
       orderBy: { name: 'asc' },
     });
   }
